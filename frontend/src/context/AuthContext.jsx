@@ -57,20 +57,20 @@ export const AuthProvider = ({ children }) => {
     .finally(() => setLoading(false));
     }, []);
 
-  const login = async (token, userData) => {
-    localStorage.setItem("token", token);
-    localStorage.setItem("user", JSON.stringify(userData));
-    setUser(userData);
-
-    if (userData.role === "admin") {
-      navigate("/admin", { replace: true });
-    } else if (userData.onboardingCompleted) {
-      navigate("/pagina1", { replace: true });
-    } else {
-      navigate("/onboarding", { replace: true });
-    }
-  };
-
+    const login = async (token, userData) => {
+      localStorage.setItem("token", token);
+      localStorage.setItem("user", JSON.stringify(userData));
+      setUser(userData);
+    
+      if (userData.role === "admin") {
+        navigate("/admin", { replace: true });
+      } else if (userData.onboardingCompleted) {
+        navigate("/pagina1", { replace: true });
+      } else {
+        navigate("/onboarding", { replace: true });
+      }
+    };
+    
   const logout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("user");

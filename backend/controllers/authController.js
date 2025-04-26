@@ -39,7 +39,6 @@ const verifyToken = (token) => {
   return jwt.verify(token, publicKey, { algorithms: ["RS256"] });
 };
 
-// ✅ Registro de usuario con referralCode generado y referido opcional
 // ✅ Registro de usuario con sistema de referidos
 exports.registerUser = async (req, res) => {
   try {
