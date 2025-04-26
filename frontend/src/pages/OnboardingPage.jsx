@@ -35,7 +35,9 @@ const OnboardingPage = () => {
   const [form, setForm] = useState({
     nombre: "",
     apellido: "",
-    fechaNacimiento: "",
+    fechaNacimientoDia: "",
+    fechaNacimientoMes: "",
+    fechaNacimientoAnio: "",
     nacionalidad: "",
     pais: "",
     ciudad: "",
@@ -60,7 +62,10 @@ const OnboardingPage = () => {
 
   const avanzar = () => {
     if (step === 1) {
-      const campos = ["nombre", "apellido", "fechaNacimiento", "nacionalidad", "tipoDocumento", "numeroDocumento", "telefono", "ciudad"];
+      const campos = [
+        "nombre", "apellido", "fechaNacimientoDia", "fechaNacimientoMes", "fechaNacimientoAnio",
+        "nacionalidad", "tipoDocumento", "numeroDocumento", "telefono", "ciudad"
+      ];
       const incompletos = campos.some((campo) => !form[campo]);
       if (incompletos) {
         alert("⚠️ Todos los campos deben ser completados.");
@@ -80,7 +85,7 @@ const OnboardingPage = () => {
       const profileData = {
         nombre: form.nombre,
         apellido: form.apellido,
-        fechaNacimiento: form.fechaNacimiento,
+        fechaNacimiento: `${form.fechaNacimientoDia}-${form.fechaNacimientoMes}-${form.fechaNacimientoAnio}`,
         pais: form.pais,
         ciudad: form.ciudad,
         nacionalidad: form.nacionalidad,
@@ -89,7 +94,6 @@ const OnboardingPage = () => {
         phone: `${form.prefijo} ${form.telefono}`,
         pin: form.pin,
         referencia: form.referencia,
-        // Asegúrate de enviar un objeto wallet válido (con valores predeterminados si no se proporciona uno)
         wallet: { usdt: 0, usdc: 0 },
       };
   
@@ -99,7 +103,7 @@ const OnboardingPage = () => {
         onboardingCompleted: true,
       }, {
         headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`, // Obtén el token del localStorage
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
       });
   
@@ -111,10 +115,9 @@ const OnboardingPage = () => {
   
     } catch (error) {
       console.error("❌ Error al guardar datos del onboarding:", error);
-      // Aquí puedes manejar errores de manera más específica si es necesario
     }
   };
-  
+
   return (
     <div className="layout-page fade-in">
       <div className="content-box" style={{ padding: "32px 16px", maxWidth: "480px" }}>
@@ -124,8 +127,28 @@ const OnboardingPage = () => {
 
             <input type="text" name="nombre" placeholder="Nombre" className="input" value={form.nombre} onChange={handleChange} required />
             <input type="text" name="apellido" placeholder="Apellido" className="input" value={form.apellido} onChange={handleChange} required />
-            <input type="date" name="fechaNacimiento" className="input" value={form.fechaNacimiento} onChange={handleChange} required />
 
+            <div style={{ display: "flex", gap: "8px", marginBottom: "16px" }}>
+              <select name="fechaNacimientoDia" value={form.fechaNacimientoDia} onChange={handleChange} className="input" required>
+                <option value="">Día</option>
+                {[...Array(31)].map((_, i) => (
+                  <option key={i} value={i + 1}>{i + 1}</option>
+                ))}
+              </select>
+              <select name="fechaNacimientoMes" value={form.fechaNacimientoMes} onChange={handleChange} className="input" required>
+                <option value="">Mes</option>
+                {["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"].map((mes, i) => (
+                  <option key={i} value={i + 1}>{mes}</option>
+                ))}
+              </select>
+              <select name="fechaNacimientoAnio" value={form.fechaNacimientoAnio} onChange={handleChange} className="input" required>
+                <option value="">Año</option>
+                {[...Array(100)].map((_, i) => (
+                  <option key={i} value={2023 - i}>{2023 - i}</option>
+                ))}
+              </select>
+            </div>
+    
             <select name="nacionalidad" value={form.nacionalidad} onChange={handleChange} className="input" required>
               <option value="">Nacionalidad</option>
               {paises.map((p) => (
