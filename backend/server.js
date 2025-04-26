@@ -18,7 +18,7 @@ app.use(helmet());
 
 // ✅ Configuración avanzada de CORS
 const corsOptions = {
-  origin: process.env.FRONTEND_URL || "http://localhost:5173",
+  origin: process.env.FRONTEND_URL || "http://localhost:5173",  // Cambiar a tu frontend en Vercel
   methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
   credentials: true,
   allowedHeaders: ["Content-Type", "Authorization"],
