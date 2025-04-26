@@ -6,7 +6,7 @@ const Header = () => {
 
   return (
     <header className="bantx-header">
-      <img src="../public/images/bantx-logo.png" alt="Inicio - BANTX" className="bantx-logo" />
+      <img src="/images/bantx-logo.png" alt="Inicio - BANTX" className="bantx-logo" />
       <nav className="bantx-nav">
         <button className="link" onClick={() => navigate("/")}>Inicio</button>
         <button className="link" onClick={() => navigate("/how-it-works")}>Cómo funciona</button>

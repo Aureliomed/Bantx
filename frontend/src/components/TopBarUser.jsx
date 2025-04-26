@@ -57,7 +57,7 @@ const TopBarUser = () => {
 
         {/* Logo BANTX centrado */}
         <img
-          src="/../public/images/bantx-logo.png"
+          src="/images/bantx-logo.png"
           alt="BANTX Logo"
           style={{ height: "32px", objectFit: "contain" }}
         />
