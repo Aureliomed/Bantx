@@ -43,9 +43,10 @@ exports.updateProfile = async (req, res) => {
         delete profileData.wallet; // evitamos sobrescribir después
       }
 
+      // Asegurarse de que los campos en profileData no sean nulos o indefinidos
       user.profileData = {
         ...user.profileData,
-        ...profileData
+        ...profileData,
       };
 
       user.markModified("profileData");

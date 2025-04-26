@@ -89,31 +89,32 @@ const OnboardingPage = () => {
         phone: `${form.prefijo} ${form.telefono}`,
         pin: form.pin,
         referencia: form.referencia,
+        // Asegúrate de enviar un objeto wallet válido (con valores predeterminados si no se proporciona uno)
+        wallet: { usdt: 0, usdc: 0 },
       };
-
+  
+      // Realiza la solicitud PUT para actualizar el perfil
       await axios.put(`${import.meta.env.VITE_API_URL}/api/users/profile`, {
         profileData,
         onboardingCompleted: true,
       }, {
         headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
+          Authorization: `Bearer ${localStorage.getItem("token")}`, // Obtén el token del localStorage
         },
       });
-      
-
-      const updatedUser = {
-        ...user,
-        onboardingCompleted: true,
-        profileData,
-      };
-      localStorage.setItem("user", JSON.stringify(updatedUser));
-      login(localStorage.getItem("token"), updatedUser);
-      navigate("/pagina1", { replace: true });
+  
+      // Aquí puedes continuar con el flujo después de un onboarding exitoso
+      const updatedUser = { ...user, onboardingCompleted: true, profileData };
+      localStorage.setItem("user", JSON.stringify(updatedUser)); // Actualiza el user en el localStorage
+      login(localStorage.getItem("token"), updatedUser); // Realiza login con el usuario actualizado
+      navigate("/pagina1", { replace: true }); // Redirige al siguiente paso del onboarding
+  
     } catch (error) {
       console.error("❌ Error al guardar datos del onboarding:", error);
+      // Aquí puedes manejar errores de manera más específica si es necesario
     }
   };
-
+  
   return (
     <div className="layout-page fade-in">
       <div className="content-box" style={{ padding: "32px 16px", maxWidth: "480px" }}>
