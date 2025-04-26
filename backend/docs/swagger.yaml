@@ -4,7 +4,8 @@ info:
   version: 1.0.0
   description: API para manejar autenticación de usuarios.
 servers:
-  - url: http://localhost:5000/api
+  - url: ${VITE_API_URL}/api
+
     description: Servidor de desarrollo
 paths:
   /auth/register:

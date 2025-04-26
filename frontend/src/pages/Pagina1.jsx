@@ -24,21 +24,23 @@ const Pagina1 = () => {
     }
   }, [loading, user, navigate]);
 
-  // WebSocket setup for real-time updates
-  useEffect(() => {
-    const socket = io("http://localhost:5000");
-    socket.on("balanceUpdated", (newBalance) => {
-      setRealTimeBalance(newBalance);
-    });
-    return () => socket.disconnect();
-  }, []);
+// WebSocket setup for real-time updates
+useEffect(() => {
+  const socket = io(import.meta.env.VITE_API_URL, {
+    transports: ["websocket"],
+  });
+  socket.on("balanceUpdated", (newBalance) => {
+    setRealTimeBalance(newBalance);
+  });
+  return () => socket.disconnect();
+}, []);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         const token = localStorage.getItem("token");
         const headers = { Authorization: `Bearer ${token}` };
-        const res = await axios.get("http://localhost:5000/api/payments/all", { headers });
+        const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/payments/all`, { headers });
         setPayments(res.data);
       } catch (error) {
         console.error("Error al cargar historial de pagos:", error);
@@ -46,13 +48,13 @@ const Pagina1 = () => {
     };
     if (!loading && user) fetchData();
   }, [loading, user]);
-
+  
   useEffect(() => {
     const fetchReferrals = async () => {
       try {
         const token = localStorage.getItem("token");
         const headers = { Authorization: `Bearer ${token}` };
-        const res = await axios.get("http://localhost:5000/api/users/referrals", { headers });
+        const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/users/referrals`, { headers });
         setReferrals(res.data);
       } catch (error) {
         console.error("Error al cargar referidos:", error);
@@ -60,7 +62,7 @@ const Pagina1 = () => {
     };
     if (!loading && user) fetchReferrals();
   }, [loading, user]);
-
+  
   useEffect(() => {
     const fetchSecurityAlerts = async () => {
       // Lógica para mostrar alertas de seguridad (opcional)

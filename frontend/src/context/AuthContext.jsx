@@ -31,31 +31,31 @@ export const AuthProvider = ({ children }) => {
     }
 
     axios
-      .get("http://localhost:5000/api/auth/me", {
-        headers: { Authorization: `Bearer ${token}` },
-      })
-      .then((res) => {
-        console.log("✅ Usuario verificado:", res.data);
-        setUser(res.data);
-
-        if (decoded?.exp) {
-          const tiempoRestante = decoded.exp * 1000 - Date.now();
-          console.log(`⏳ Token expira en ${Math.round(tiempoRestante / 1000)}s`);
-
-          const timeout = setTimeout(() => {
-            console.warn("🔒 Token expirado. Cerrando sesión.");
-            logout();
-          }, tiempoRestante);
-
-          return () => clearTimeout(timeout);
-        }
-      })
-      .catch((err) => {
-        console.error("❌ Error al validar token:", err);
-        logout();
-      })
-      .finally(() => setLoading(false));
-  }, []);
+    .get(`${import.meta.env.VITE_API_URL}/api/auth/me`, {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+    .then((res) => {
+      console.log("✅ Usuario verificado:", res.data);
+      setUser(res.data);
+  
+      if (decoded?.exp) {
+        const tiempoRestante = decoded.exp * 1000 - Date.now();
+        console.log(`⏳ Token expira en ${Math.round(tiempoRestante / 1000)}s`);
+  
+        const timeout = setTimeout(() => {
+          console.warn("🔒 Token expirado. Cerrando sesión.");
+          logout();
+        }, tiempoRestante);
+  
+        return () => clearTimeout(timeout);
+      }
+    })
+    .catch((err) => {
+      console.error("❌ Error al validar token:", err);
+      logout();
+    })
+    .finally(() => setLoading(false));
+    }, []);
 
   const login = async (token, userData) => {
     localStorage.setItem("token", token);

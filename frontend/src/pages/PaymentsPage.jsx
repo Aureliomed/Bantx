@@ -21,14 +21,15 @@ const PaymentsPage = () => {
           return;
         }
 
-        const res = await axios.get("http://localhost:5000/api/payments/all", {
+        const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/payments/all`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         setPayments(res.data);
-      } catch (err) {
-        console.error(err);
-        setError("❌ Error al obtener historial de pagos.");
-      }
+        } catch (err) {
+          console.error(err);
+          setError("❌ Error al obtener historial de pagos.");
+        }
+        
     };
 
     if (user && !loading) {

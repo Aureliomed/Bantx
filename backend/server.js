@@ -29,7 +29,6 @@ const allowedOrigins = [
   "https://insurance-99hv2wop0-aureli104s-projects.vercel.app",
 ];
 
-
 // Middleware CORS
 app.use(cors({
   origin: (origin, callback) => {
@@ -133,11 +132,13 @@ io.on("connection", (socket) => {
   });
 });
 
+// Actualizar para usar VITE_API_URL para la API base
+const API_URL = process.env.VITE_API_URL || `http://localhost:${PORT}`;
 server.listen(PORT, () => {
-  logger.info(`🚀 Servidor corriendo en http://localhost:${PORT}`);
+  logger.info(`🚀 Servidor corriendo en ${API_URL}`);
 
   io.emit("server-status", {
-    api: `http://localhost:${PORT}`,
+    api: API_URL,
     smtp: "activo",
     mongodb: "conectado",
     websocket: "activo",
@@ -147,7 +148,7 @@ server.listen(PORT, () => {
   console.log(`
 🟢 TODOS LOS SERVICIOS INICIADOS CORRECTAMENTE:
 
-📡 API:           http://localhost:${PORT}
+📡 API:           ${API_URL}
 📬 SMTP:          puerto 2525
 🛢️  MongoDB:      Conectado
 🌐 WebSocket:     Activo

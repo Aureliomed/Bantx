@@ -26,7 +26,7 @@ const CreateAdminModal = ({ onClose, onSuccess }) => {
     e.preventDefault();
     try {
       await axios.post(
-        "http://localhost:5000/api/auth/create-admin",
+        `${import.meta.env.VITE_API_URL}/api/auth/create-admin`,  // Usamos VITE_API_URL
         { email, password, secretKey },
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -37,7 +37,7 @@ const CreateAdminModal = ({ onClose, onSuccess }) => {
       toast.error("❌ Error al crear administrador");
     }
   };
-
+  
   return (
     <div className="modal">
       <div className="box">
@@ -81,9 +81,10 @@ const UsersPage = () => {
     dispatch(setLoading(true));
     dispatch(setError(null));
     try {
-      const res = await axios.get("http://localhost:5000/api/users", {
+      const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/users`, {
         headers: { Authorization: `Bearer ${token}` },
       });
+    
       dispatch(setUsers(res.data));
     } catch (error) {
       dispatch(setError("❌ Error al cargar usuarios"));
@@ -104,10 +105,11 @@ const UsersPage = () => {
   const handleUpdate = async (user) => {
     try {
       const res = await axios.put(
-        `http://localhost:5000/api/users/profile`,
+        `${import.meta.env.VITE_API_URL}/api/users/profile`,  // Usamos VITE_API_URL
         { email: user.email, role: editRole, status: editStatus },
         { headers: { Authorization: `Bearer ${token}` } }
       );
+    
       dispatch(updateUser(res.data.user));
       socket?.emit("userUpdated", res.data.user);
       toast.success("✅ Usuario actualizado");
@@ -119,9 +121,10 @@ const UsersPage = () => {
 
   const handleDelete = async (userId) => {
     try {
-      await axios.delete(`http://localhost:5000/api/users/${userId}`, {
+      await axios.delete(`${import.meta.env.VITE_API_URL}/api/users/${userId}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
+    
       dispatch(removeUser(userId));
       socket?.emit("userRemoved", userId);
       toast.success("🗑️ Usuario eliminado!");

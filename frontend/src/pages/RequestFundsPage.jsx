@@ -36,10 +36,11 @@ const RequestFundsPage = () => {
     try {
       const token = localStorage.getItem("token");
       const res = await axios.post(
-        "http://localhost:5000/api/payments/request",
+        `${import.meta.env.VITE_API_URL}/api/payments/request`,
         { amount: parsedAmount, description },
         { headers: { Authorization: `Bearer ${token}` } }
       );
+    
 
       setSuccessMessage("✅ Solicitud enviada correctamente.");
       setAmount("");

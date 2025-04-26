@@ -15,7 +15,7 @@ import "../styles/globals.css";
 import { useNavigate } from "react-router-dom";
 
 // 📡 Conexión WebSocket única
-const socket = io("http://localhost:5000", { autoConnect: false });
+const socket = io(import.meta.env.VITE_API_URL, { autoConnect: false });
 
 const EmailsPage = () => {
   const dispatch = useDispatch();
@@ -39,9 +39,10 @@ const EmailsPage = () => {
     const token = localStorage.getItem("token");
 
     try {
-      const res = await axios.get(`http://localhost:5000/api/emails?page=${page}&limit=5`, {
+      const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/emails?page=${page}&limit=5`, {
         headers: { Authorization: `Bearer ${token}` },
       });
+    
 
       dispatch(setEmails(res.data.emails));
       setTotalPages(res.data.totalPages);

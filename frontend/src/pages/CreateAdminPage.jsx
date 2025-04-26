@@ -15,7 +15,7 @@ const CreateAdminPage = () => {
     try {
       const token = localStorage.getItem("token");
       const res = await axios.post(
-        "http://localhost:5000/api/admin/create",
+        `${import.meta.env.VITE_API_URL}/api/admin/create`,  // Usando la variable de entorno
         { email: adminEmail, password: adminPassword, authPassword },
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -25,7 +25,7 @@ const CreateAdminPage = () => {
       setMessage("❌ Error al crear el administrador.");
     }
   };
-
+  
   return (
     <div className="container">
       <div className="box">

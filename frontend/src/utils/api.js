@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || "http://localhost:5000/api",  // Usar VITE_API_URL en producción
+  baseURL: import.meta.env.VITE_API_URL,  // Usar siempre VITE_API_URL en producción
 });
 
 // Interceptor de respuestas para manejar expiración de token

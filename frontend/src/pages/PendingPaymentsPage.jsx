@@ -22,7 +22,7 @@ const PendingPaymentsPage = () => {
     const fetchPendingPayments = async () => {
       try {
         const token = localStorage.getItem("token");
-        const res = await axios.get("http://localhost:5000/api/payments/pending", {
+        const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/payments/pending`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         setPayments(res.data);
@@ -30,15 +30,15 @@ const PendingPaymentsPage = () => {
         setError("❌ Error al obtener pagos pendientes.");
       }
     };
-
+  
     if (!loading && user) fetchPendingPayments();
   }, [loading, user]);
-
+  
   const approvePayment = async (id) => {
     try {
       const token = localStorage.getItem("token");
       await axios.put(
-        `http://localhost:5000/api/payments/approve/${id}`,
+        `${import.meta.env.VITE_API_URL}/api/payments/approve/${id}`,
         {},
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -47,11 +47,11 @@ const PendingPaymentsPage = () => {
       setError("❌ Error al aprobar el pago.");
     }
   };
-
+  
   const deletePayment = async (id) => {
     try {
       const token = localStorage.getItem("token");
-      await axios.delete(`http://localhost:5000/api/payments/${id}`, {
+      await axios.delete(`${import.meta.env.VITE_API_URL}/api/payments/${id}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       setPayments(payments.filter((p) => p._id !== id));
@@ -59,7 +59,7 @@ const PendingPaymentsPage = () => {
       setError("❌ Error al eliminar el pago.");
     }
   };
-
+  
   if (loading) {
     return (
       <>

@@ -3,7 +3,9 @@ import axios from "axios";
 import io from "socket.io-client";
 
 // 📡 Configuración de WebSocket
-const socket = io("http://localhost:5000");
+const socket = io(import.meta.env.VITE_API_URL, {
+  transports: ["websocket"],
+});
 
 // 📌 Estado global con Zustand
 const useEmailStore = create((set, get) => ({
@@ -19,9 +21,10 @@ const useEmailStore = create((set, get) => ({
 
     try {
       const token = localStorage.getItem("token");
-      const res = await axios.get(`http://localhost:5000/api/emails?page=${page}&limit=${limit}`, {
+      const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/emails?page=${page}&limit=${limit}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
+    
 
       set({ emails: res.data.emails, loading: false });
     } catch (error) {

@@ -37,14 +37,14 @@ const ForgotPassword = () => {
     }
 
     try {
-      const res = await axios.post("http://localhost:5000/api/auth/forgot-password", { email });
+      const res = await axios.post(`${import.meta.env.VITE_API_URL}/api/auth/forgot-password`, { email });
       setMessage("✅ " + res.data.message);
     } catch (error) {
       setErrorMessage(
         error.response?.data?.message || "❌ Error al enviar el correo de recuperación."
       );
-          }
-
+    }
+    
     setLoading(false);
   };
 
