@@ -17,23 +17,32 @@ const PORT = process.env.PORT || 5000;
 app.use(helmet());
 
 // ✅ Configuración avanzada de CORS
-const corsOptions = {
-  origin: process.env.FRONTEND_URL || "http://localhost:5173",  // Cambiar a tu frontend en Vercel
-  methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
-  credentials: true,
-  allowedHeaders: ["Content-Type", "Authorization"],
-};
-app.use(cors(corsOptions));
+const allowedOrigins = [
+  process.env.CLIENT_URL || "http://localhost:5173",   // Vercel frontend en producción
+  "https://bantx.vercel.app",  // URL de producción de frontend en Vercel
+  "https://bantx-git-main-aureliomeds-projects.vercel.app",  // Otros dominios de producción Vercel
+  "https://bantx-4wmrj67z3-aureliomeds-projects.vercel.app",  // Otros dominios de producción Vercel
+  "https://insurance-app-xi.vercel.app", // Si tienes más dominios Vercel
+  "https://wealthy-kellie-aurelio104-48c9a52a.koyeb.app",  // Koyeb frontend (si se aplica)
+  "https://insurance-3gzup83o0-aurelio104s-projects.vercel.app", // Más dominios de producción
+  "https://insurance-frq4np317-aureli104s-projects.vercel.app",
+  "https://insurance-99hv2wop0-aureli104s-projects.vercel.app",
+];
 
-// Middleware adicional para compatibilidad con CORS
-app.use((req, res, next) => {
-  res.header("Access-Control-Allow-Origin", process.env.FRONTEND_URL || "http://localhost:5173");
-  res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
-  res.header("Access-Control-Allow-Headers", "Content-Type, Authorization");
-  res.header("Access-Control-Allow-Credentials", "true");
-  if (req.method === "OPTIONS") return res.sendStatus(204);
-  next();
-});
+// Middleware CORS
+app.use(cors({
+  origin: (origin, callback) => {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);  // Permite el origen
+    } else {
+      console.warn(`🛑 Origen no permitido por CORS: ${origin}`);
+      callback(new Error("No permitido por CORS"));  // Bloquea el origen
+    }
+  },
+  credentials: true,
+  methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
+  allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With", "Accept"],
+}));
 
 // 📌 Middleware para parsear JSON y formularios
 app.use(express.json());
@@ -143,6 +152,5 @@ server.listen(PORT, () => {
 🌐 WebSocket:     Activo
 `);
 });
-
 
 module.exports = { app, io };
