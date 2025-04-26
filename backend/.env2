@@ -1,0 +1,35 @@
+# 📦 Conexión a MongoDB
+MONGO_URI=mongodb+srv://aureliomedina24:PYy3dMvIQohB2jD8@cluster0.bsgpp.mongodb.net/bantx?retryWrites=true&w=majority&appName=Cluster0
+VITE_API_URL=https://enchanting-roxane-aureliomed-4aa14473.koyeb.app
+CLIENT_URL=https://bantx.vercel.app
+
+
+
+MONGO_URI=mongodb://localhost:27017/bantx
+
+# 🌐 Servidor Backend
+PORT=5000
+FRONTEND_URL=http://localhost:5173
+
+# 🔐 Claves de autenticación
+JWT_SECRET=mi_secreto_jwt
+REFRESH_SECRET=otra_clave_super_segura
+ADMIN_SECRET=SuperClave1234
+
+# 🚀 Simulando producción aunque estemos localmente
+NODE_ENV=production
+
+
+
+https://bantx.vercel.app/register
+https://bantx-git-main-aureliomeds-projects.vercel.app
+https://bantx-4wmrj67z3-aureliomeds-projects.vercel.app
+
+
+https://enchanting-roxane-aureliomed-4aa14473.koyeb.app/
+
+
+#
+# URL del frontend
+CLIENT_URL=https://insurance-app-xi.vercel.app
+FRONTEND_URL=https://insurance-app-xi.vercel.app

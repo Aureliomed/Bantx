@@ -18,16 +18,17 @@ app.use(helmet());
 
 // ✅ Configuración avanzada de CORS
 const allowedOrigins = [
-  process.env.CLIENT_URL || "http://localhost:5173",   // Vercel frontend en producción
+  process.env.CLIENT_URL || "http://localhost:5173",  // Vercel frontend en producción
   "https://bantx.vercel.app",  // URL de producción de frontend en Vercel
-  "https://bantx-git-main-aureliomeds-projects.vercel.app",  // Otros dominios de producción Vercel
-  "https://bantx-4wmrj67z3-aureliomeds-projects.vercel.app",  // Otros dominios de producción Vercel
-  "https://insurance-app-xi.vercel.app", // Si tienes más dominios Vercel
-  "https://wealthy-kellie-aurelio104-48c9a52a.koyeb.app",  // Koyeb frontend (si se aplica)
-  "https://insurance-3gzup83o0-aurelio104s-projects.vercel.app", // Más dominios de producción
+  "https://bantx-git-main-aureliomeds-projects.vercel.app",
+  "https://bantx-4wmrj67z3-aureliomeds-projects.vercel.app",  // Otros subdominios Vercel
+  "https://insurance-app-xi.vercel.app",  // Otros orígenes Vercel
+  "https://wealthy-kellie-aurelio104-48c9a52a.koyeb.app",  // Orígenes Koyeb (si es necesario)
+  "https://insurance-3gzup83o0-aurelio104s-projects.vercel.app", 
   "https://insurance-frq4np317-aureli104s-projects.vercel.app",
   "https://insurance-99hv2wop0-aureli104s-projects.vercel.app",
 ];
+
 
 // Middleware CORS
 app.use(cors({

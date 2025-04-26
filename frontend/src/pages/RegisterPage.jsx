@@ -109,14 +109,13 @@ const RegisterPage = () => {
     setIsSubmitting(true);
 
     try {
-      await axios.post("http://localhost:5000/api/auth/register", {
+      await axios.post(`${import.meta.env.VITE_API_URL}/api/auth/register`, {
         username: formData.username,
         email: formData.email,
         password: formData.password,
         referredBy: formData.referralCode || undefined,
         profileData: { country: formData.country }
       });
-
       setMessage("✅ Registro exitoso. Redirigiendo al inicio de sesión...");
       setTimeout(() => navigate("/login"), 2000);
     } catch (error) {
@@ -124,7 +123,7 @@ const RegisterPage = () => {
     } finally {
       setIsSubmitting(false);
     }
-  };
+      };
 
   if (user === undefined) {
     return <LoadingScreen />;
