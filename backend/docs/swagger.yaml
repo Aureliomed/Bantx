@@ -1,0 +1,110 @@
+openapi: 3.0.0
+info:
+  title: API de Autenticación
+  version: 1.0.0
+  description: API para manejar autenticación de usuarios.
+servers:
+  - url: http://localhost:5000/api
+    description: Servidor de desarrollo
+paths:
+  /auth/register:
+    post:
+      summary: Registrar un nuevo usuario
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  format: email
+                password:
+                  type: string
+                  minLength: 6
+      responses:
+        '201':
+          description: Usuario registrado con éxito
+        '400':
+          description: Error en los datos de entrada
+  /auth/login:
+    post:
+      summary: Iniciar sesión
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  format: email
+                password:
+                  type: string
+      responses:
+        '200':
+          description: Inicio de sesión exitoso
+        '400':
+          description: Credenciales inválidas
+  /auth/forgot-password:
+    post:
+      summary: Solicitar restablecimiento de contraseña
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  format: email
+      responses:
+        '200':
+          description: Correo enviado con éxito
+        '400':
+          description: El usuario no existe
+  /auth/reset-password:
+    post:
+      summary: Restablecer contraseña
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                token:
+                  type: string
+                newPassword:
+                  type: string
+                  minLength: 6
+      responses:
+        '200':
+          description: Contraseña restablecida con éxito
+        '400':
+          description: Token inválido o expirado
+          paths:
+  /api/auth/register:
+    post:
+      summary: Registrar un nuevo usuario
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  format: email
+                password:
+                  type: string
+                  minLength: 6
+      responses:
+        '201':
+          description: Usuario registrado con éxito
+        '400':
+          description: Error en los datos de entrada

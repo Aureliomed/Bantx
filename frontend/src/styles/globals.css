@@ -1,0 +1,17 @@
+/* globals.css: Importador principal de estilos */
+
+/* 🔄 Estructura base, layout, navegación, footer, hero, etc. */
+@import "./global.css";
+
+/* 🔘 Botones */
+@import "./buttons.css";
+
+/* 🎞️ Animaciones */
+@import "./animations.css";
+
+/* 📄 Formularios */
+@import "./forms.css";
+
+@import "./homepage.css";
+
+/* ➕ Puedes seguir agregando más: modals.css, onboarding.css, dark-mode.css, etc. */

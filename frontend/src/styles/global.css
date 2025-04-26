@@ -1,0 +1,181 @@
+
+
+/* ------------------------------
+🔄 RESET Y FUENTES
+------------------------------ */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: "Inter", sans-serif;
+  }
+  
+  html {
+    scroll-behavior: smooth;
+  }
+  
+  body {
+    background: #ffffff;
+    color: #1F2E55;
+    min-height: 100vh;
+  }
+  
+  /* ------------------------------
+  🌐 NAVEGACIÓN
+  ------------------------------ */
+  .bantx-header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 64px;
+    background-color: #ffffff;
+    border-bottom: 1px solid #eee;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 24px;
+    z-index: 999;
+  }
+  
+  .bantx-logo {
+    height: 40px;
+    opacity: 1;
+    filter: none;
+  }
+  
+  .bantx-nav {
+    display: flex;
+    gap: 16px;
+    font-size: 0.95rem;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  
+  /* ------------------------------
+  🏠 LAYOUT GENERAL
+  ------------------------------ */
+  .layout-page {
+    width: 100%;
+    max-width: 480px;
+    margin: 0 auto;
+    padding-top: 140px; /* ⬅️ Antes 80px */
+    background-color: #ffffff;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+  }
+    
+  .content-box {
+    width: 100%;
+    max-width: 100%;
+    padding: 0;
+    text-align: center;
+  }
+  
+  /* ------------------------------
+  🎯 HERO PRINCIPAL
+  ------------------------------ */
+  .bantx-hero {
+    padding: 48px 24px;
+  }
+  
+  .enhanced-hero {
+    background: linear-gradient(135deg, #1F2E55 0%, #4BB38D 100%);
+    color: white;
+    border-radius: 16px;
+    margin: 24px;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+  }
+  
+  .bantx-title {
+    font-size: 2.5rem;
+    font-weight: 800;
+    line-height: 1.2;
+    letter-spacing: -0.5px;
+    text-align: center;
+    margin-bottom: 24px;
+  }
+  
+  .bantx-subtitle {
+    font-size: 1.2rem;
+    color: #E0F7EF;
+    margin-top: 12px;
+    text-align: center;
+  }
+  
+  /* ------------------------------
+  🧩 BENEFICIOS
+  ------------------------------ */
+  .benefits-section {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    padding: 0 24px;
+    margin-bottom: 32px;
+  }
+  
+  .user-card {
+    background: #ffffff;
+    padding: 16px;
+    border-radius: 12px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+    text-align: left;
+    font-size: 0.95rem;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+  
+  .user-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  }
+  
+  /* ------------------------------
+  🔚 FOOTER
+  ------------------------------ */
+  .bantx-footer {
+    text-align: center;
+    font-size: 0.85rem;
+    color: #777;
+    padding: 32px 24px 24px;
+    border-top: 1px solid #eee;
+    margin-top: 40px;
+  }
+  
+  .footer-links {
+    display: flex;
+    justify-content: center;
+    gap: 16px;
+    flex-wrap: wrap;
+    margin-top: 8px;
+  }
+  
+  .footer-links .link {
+    color: #1F2E55;
+    text-decoration: none;
+    font-weight: 500;
+  }
+  
+  .footer-links .link:hover {
+    color: #4BB38D;
+  }
+  
+  .separator {
+    color: #ccc;
+    font-weight: 400;
+  }
+  
+  /* ------------------------------
+  📱 RESPONSIVE
+  ------------------------------ */
+  @media screen and (max-width: 768px) {
+    .bantx-title { font-size: 1.75rem; }
+    .bantx-subtitle { font-size: 1rem; }
+  }
+  
+  @media screen and (max-width: 480px) {
+    .form { padding: 0 16px; }
+    .bantx-title { font-size: 1.6rem; }
+  }
+  

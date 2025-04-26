@@ -1,0 +1,29 @@
+/* ------------------------------
+🎞️ ANIMACIONES GENERALES
+------------------------------ */
+
+/* Fade in suave */
+.fade-in {
+    opacity: 0;
+    animation: fadeIn ease 0.6s forwards;
+  }
+  
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+  }
+  
+  /* Fade + slide up */
+  .fade-slide-up {
+    opacity: 0;
+    transform: translateY(12px);
+    animation: slideUpFade 0.6s ease-out forwards;
+  }
+  
+  @keyframes slideUpFade {
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  
