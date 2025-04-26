@@ -19,6 +19,355 @@ body {
 }
 
 /* ------------------------------
+🔄 RESET Y FUENTES
+------------------------------ */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: "Inter", sans-serif;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: #ffffff;
+  color: #1F2E55;
+  min-height: 100vh;
+}
+
+/* ------------------------------
+🌐 NAVEGACIÓN
+------------------------------ */
+.bantx-header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 64px;
+  background-color: #ffffff;
+  border-bottom: 1px solid #eee;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 24px;
+  z-index: 999;
+}
+
+.bantx-logo {
+  height: 40px;
+  opacity: 1;
+  filter: none;
+}
+
+.bantx-nav {
+  display: flex;
+  gap: 16px;
+  font-size: 0.95rem;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.bantx-nav button {
+  padding: 8px 16px;
+  border: none;
+  background-color: transparent;
+  color: #1f2e55;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.bantx-nav button:hover {
+  color: #4BB38D;
+}
+
+.bantx-nav button:focus {
+  outline: none;
+}
+
+/* ------------------------------
+🔄 RESET Y FUENTES
+------------------------------ */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: "Inter", sans-serif;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: #ffffff;
+  color: #1F2E55;
+  min-height: 100vh;
+}
+
+/* ------------------------------
+🌐 NAVEGACIÓN
+------------------------------ */
+.bantx-header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 64px;
+  background-color: #ffffff;
+  border-bottom: 1px solid #eee;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 24px;
+  z-index: 999;
+}
+
+.bantx-logo {
+  height: 40px;
+  opacity: 1;
+  filter: none;
+}
+
+.bantx-nav {
+  display: flex;
+  gap: 16px;
+  font-size: 0.95rem;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.bantx-nav button {
+  padding: 8px 16px;
+  border: none;
+  background-color: transparent;
+  color: #1f2e55;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.bantx-nav button:hover {
+  color: #4BB38D;
+}
+
+.bantx-nav button:focus {
+  outline: none;
+}
+
+/* ------------------------------
+🗒️ Icono de menú en pantallas pequeñas (hamburguesa)
+------------------------------ */
+.menu-icon {
+  display: none;
+  font-size: 2rem;
+  cursor: pointer;
+  color: #1f2e55;
+}
+
+/* ------------------------------
+🔄 RESET Y FUENTES
+------------------------------ */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: "Inter", sans-serif;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: #ffffff;
+  color: #1F2E55;
+  min-height: 100vh;
+}
+
+/* ------------------------------
+🌐 NAVEGACIÓN
+------------------------------ */
+.bantx-header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 64px;
+  background-color: #ffffff;
+  border-bottom: 1px solid #eee;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 24px;
+  z-index: 999;
+}
+
+.bantx-logo {
+  height: 40px;
+  opacity: 1;
+  filter: none;
+}
+
+.bantx-nav {
+  display: flex;
+  gap: 16px;
+  font-size: 0.95rem;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.bantx-nav button {
+  padding: 8px 16px;
+  border: none;
+  background-color: transparent;
+  color: #1f2e55;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.bantx-nav button:hover {
+  color: #4BB38D;
+}
+
+.bantx-nav button:focus {
+  outline: none;
+}
+
+/* ------------------------------
+🗒️ Icono de menú en pantallas pequeñas (hamburguesa)
+------------------------------ */
+.menu-icon {
+  display: none;
+  font-size: 2rem;
+  cursor: pointer;
+  color: #1f2e55;
+}
+
+/* ------------------------------
+📱 RESPONSIVE
+------------------------------ */
+@media screen and (max-width: 768px) {
+  .bantx-nav {
+    display: none;  /* Ocultamos los botones de navegación */
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+  }
+
+  .bantx-nav.open {
+    display: flex; /* Mostramos el menú cuando el estado "open" esté activo */
+  }
+
+  .bantx-logo {
+    height: 32px;
+  }
+
+  /* Mostrar el icono de hamburguesa en pantallas pequeñas */
+  .menu-icon {
+    display: block;
+  }
+}
+
+@media screen and (max-width: 480px) {
+  .bantx-nav button {
+    font-size: 0.85rem;
+    padding: 12px 18px;
+  }
+
+  .bantx-logo {
+    height: 28px;
+  }
+}
+
+/* ------------------------------
+📱 RESPONSIVE
+------------------------------ */
+@media screen and (max-width: 768px) {
+  .bantx-nav {
+    display: none;  /* Ocultamos los botones de navegación */
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+  }
+
+  .bantx-nav.open {
+    display: flex; /* Mostramos el menú cuando el estado "open" esté activo */
+  }
+
+  .bantx-logo {
+    height: 32px;
+  }
+
+  /* Mostrar el icono de hamburguesa en pantallas pequeñas */
+  .menu-icon {
+    display: block;
+  }
+}
+
+@media screen and (max-width: 480px) {
+  .bantx-nav button {
+    font-size: 0.85rem;
+    padding: 12px 18px;
+  }
+
+  .bantx-logo {
+    height: 28px;
+  }
+}
+
+/* ------------------------------
+🗒️ Icono de menú en pantallas pequeñas (hamburguesa)
+------------------------------ */
+.menu-icon {
+  display: none;
+  font-size: 2rem;
+  cursor: pointer;
+  color: #1f2e55;
+}
+
+/* ------------------------------
+📱 RESPONSIVE
+------------------------------ */
+@media screen and (max-width: 768px) {
+  .bantx-nav {
+    display: none;  /* Ocultamos los botones de navegación */
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+  }
+
+  .bantx-nav.open {
+    display: flex; /* Mostramos el menú cuando el estado "open" esté activo */
+  }
+
+  .bantx-logo {
+    height: 32px;
+  }
+
+  /* Mostrar el icono de hamburguesa en pantallas pequeñas */
+  .menu-icon {
+    display: block;
+  }
+}
+
+@media screen and (max-width: 480px) {
+  .bantx-nav button {
+    font-size: 0.85rem;
+    padding: 12px 18px;
+  }
+
+  .bantx-logo {
+    height: 28px;
+  }
+}
+
+
+/* ------------------------------
 🌐 NAVEGACIÓN
 ------------------------------ */
 .bantx-header {
