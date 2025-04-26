@@ -38,12 +38,20 @@ exports.updateProfile = async (req, res) => {
       if (profileData.wallet && typeof profileData.wallet === "object") {
         user.profileData.wallet = {
           ...user.profileData.wallet,
-          ...profileData.wallet
+          ...profileData.wallet // Actualiza solo los valores proporcionados en profileData.wallet
         };
         delete profileData.wallet; // evitamos sobrescribir después
       }
 
-      // Asegurarse de que los campos en profileData no sean nulos o indefinidos
+      // Si no viene wallet, aseguramos que siempre tenga valores predeterminados
+      if (!profileData.wallet) {
+        user.profileData.wallet = {
+          usdt: 0,
+          usdc: 0, // Asignar valores predeterminados si no se incluye wallet
+        };
+      }
+
+      // Actualizar los demás campos de profileData
       user.profileData = {
         ...user.profileData,
         ...profileData,
