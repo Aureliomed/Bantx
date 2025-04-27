@@ -1,4 +1,5 @@
-// 📌 Importaciones básicas
+// src/server.js
+
 require("dotenv").config();
 const express = require("express");
 const mongoose = require("mongoose");
@@ -7,36 +8,37 @@ const helmet = require("helmet");
 const rateLimit = require("express-rate-limit");
 const http = require("http");
 const socketIo = require("socket.io");
-const logger = require("./utils/logger"); // 📌 Logger centralizado con Winston
-const { startSMTPServer } = require("./config/smtpServer"); // 📩 Importar el servidor SMTP
+const logger = require("./utils/logger");
+const { startSMTPServer } = require("./config/smtpServer");
 
 const app = express();
+app.set("trust proxy", true); // ⚡️ Correcto para entornos como Vercel/Koyeb
+
 const PORT = process.env.PORT || 5000;
 
-// 🔒 Middlewares de seguridad
+// 🔒 Seguridad
 app.use(helmet());
 
-// ✅ Configuración avanzada de CORS
+// 🌐 Configuración CORS segura
 const allowedOrigins = [
-  process.env.CLIENT_URL || "http://localhost:5173",  // Vercel frontend en producción
-  "https://bantx.vercel.app",  // URL de producción de frontend en Vercel
+  process.env.CLIENT_URL || "http://localhost:5173",
+  "https://bantx.vercel.app",
   "https://bantx-git-main-aureliomeds-projects.vercel.app",
-  "https://bantx-4wmrj67z3-aureliomeds-projects.vercel.app",  // Otros subdominios Vercel
-  "https://insurance-app-xi.vercel.app",  // Otros orígenes Vercel
-  "https://wealthy-kellie-aurelio104-48c9a52a.koyeb.app",  // Orígenes Koyeb (si es necesario)
-  "https://insurance-3gzup83o0-aurelio104s-projects.vercel.app", 
+  "https://bantx-4wmrj67z3-aureliomeds-projects.vercel.app",
+  "https://insurance-app-xi.vercel.app",
+  "https://wealthy-kellie-aurelio104-48c9a52a.koyeb.app",
+  "https://insurance-3gzup83o0-aurelio104s-projects.vercel.app",
   "https://insurance-frq4np317-aureli104s-projects.vercel.app",
   "https://insurance-99hv2wop0-aureli104s-projects.vercel.app",
 ];
 
-// Middleware CORS
 app.use(cors({
   origin: (origin, callback) => {
     if (!origin || allowedOrigins.includes(origin)) {
-      callback(null, true);  // Permite el origen
+      callback(null, true);
     } else {
-      console.warn(`🛑 Origen no permitido por CORS: ${origin}`);
-      callback(new Error("No permitido por CORS"));  // Bloquea el origen
+      console.warn(`🔴 CORS: origen bloqueado -> ${origin}`);
+      callback(new Error("No permitido por CORS"));
     }
   },
   credentials: true,
@@ -44,33 +46,43 @@ app.use(cors({
   allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With", "Accept"],
 }));
 
-// 📌 Middleware para parsear JSON y formularios
+// 🔐 Middleware de datos
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// 🚫 Protección contra ataques de fuerza bruta
-const limiter = rateLimit({
+// 🚫 Límite de solicitudes
+app.use(rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 100,
-  message: "🚫 Demasiadas solicitudes desde esta IP. Inténtalo de nuevo más tarde.",
-});
-app.use(limiter);
+  message: "🚫 Demasiadas solicitudes, intenta más tarde.",
+}));
 
-// 📌 Conexión a MongoDB
+// 📅 MongoDB
 (async () => {
   try {
-    await mongoose.connect(process.env.MONGO_URI || "mongodb://localhost:27017/sapim");
-    logger.info("✅ Conectado a MongoDB");
+    if (!process.env.MONGO_URI) {
+      logger.error("❌ MONGO_URI no definido en .env. Abortando.");
+      process.exit(1);
+    }
 
-    // 🚀 Después de conectar MongoDB, iniciar el servidor SMTP
+    await mongoose.connect(process.env.MONGO_URI);
+    logger.info("✅ Conectado a MongoDB correctamente.");
+
+    // Verificación extra: contar usuarios
+    const User = require("./models/User");
+    const userCount = await User.countDocuments();
+    logger.info(`📊 Usuarios registrados en MongoDB: ${userCount}`);
+
+    // Iniciar servidor SMTP
     startSMTPServer();
+
   } catch (err) {
     logger.error(`❌ Error de conexión a MongoDB: ${err.message}`);
     process.exit(1);
   }
 })();
 
-// 📌 Importar rutas
+// 📜 Rutas API
 const authRoutes = require("./routes/authRoutes");
 const userRoutes = require("./routes/userRoutes");
 const emailRoutes = require("./routes/emailRoutes");
@@ -85,37 +97,31 @@ const routes = {
 
 Object.entries(routes).forEach(([path, route]) => {
   if (!route) {
-    logger.error(`❌ Error: La ruta ${path} no está correctamente importada.`);
+    logger.error(`❌ Ruta ${path} no importada.`);
     process.exit(1);
   }
   app.use(path, route);
 });
 
-// Middleware para loguear cada request
-app.use((req, res, next) => {
-  logger.info(`📥 ${req.method} ${req.path}`);
-  next();
-});
-
-// Ruta de prueba
+// 🌐 Ruta de prueba
 app.get("/", (req, res) => {
-  res.status(200).json({ message: "✅ ¡Backend funcionando correctamente!" });
+  res.status(200).json({ message: "✅ Backend funcionando." });
 });
 
-// 404
+// 🚫 404 handler
 app.use((req, res) => {
   res.status(404).json({ message: "🚫 Ruta no encontrada." });
 });
 
-// Manejo global de errores
+// 📉 Global error handler
 app.use((err, req, res, next) => {
-  logger.error(`❌ Error en el servidor: ${err.message}`);
+  logger.error(`❌ Error servidor: ${err.message}`);
   if (!res.headersSent) {
-    res.status(err.status || 500).json({ message: err.message || "Error interno del servidor." });
+    res.status(err.status || 500).json({ message: err.message || "Error interno" });
   }
 });
 
-// 🌐 WebSocket Server
+// 🌌 WebSocket Server
 const server = http.createServer(app);
 const io = socketIo(server, {
   cors: {
@@ -126,14 +132,14 @@ const io = socketIo(server, {
 });
 
 io.on("connection", (socket) => {
-  console.log("🟢 Cliente conectado a WebSocket", socket.id);
+  logger.info(`🟢 WebSocket conectado: ${socket.id}`);
   socket.on("disconnect", () => {
-    console.log("🔴 Cliente desconectado", socket.id);
+    logger.info(`🔴 WebSocket desconectado: ${socket.id}`);
   });
 });
 
-// Actualizar para usar VITE_API_URL para la API base
 const API_URL = process.env.VITE_API_URL || `http://localhost:${PORT}`;
+
 server.listen(PORT, () => {
   logger.info(`🚀 Servidor corriendo en ${API_URL}`);
 
@@ -142,17 +148,17 @@ server.listen(PORT, () => {
     smtp: "activo",
     mongodb: "conectado",
     websocket: "activo",
-    timestamp: new Date().toISOString()
+    timestamp: new Date().toISOString(),
   });
 
   console.log(`
-🟢 TODOS LOS SERVICIOS INICIADOS CORRECTAMENTE:
+✅ SERVIDOR ARRANCADO:
 
-📡 API:           ${API_URL}
-📬 SMTP:          puerto 2525
-🛢️  MongoDB:      Conectado
-🌐 WebSocket:     Activo
-`);
+📡 API: ${API_URL}
+📧 SMTP: puerto 2525
+📅 MongoDB: Conectado
+🌌 WebSocket: Activo
+  `);
 });
 
 module.exports = { app, io };
