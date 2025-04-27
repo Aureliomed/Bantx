@@ -148,7 +148,6 @@ exports.saveOnboardingData = async (req, res) => {
   }
 };
 
-// 📌 Obtener referidos
 exports.getReferrals = async (req, res) => {
   try {
     const user = await User.findById(req.user.id).select("referralCode");
