@@ -96,8 +96,7 @@ const OnboardingPage = () => {
         referencia: form.referencia,
         wallet: { usdt: 0, usdc: 0 },
       };
-  
-      // Realiza la solicitud PUT para actualizar el perfil
+
       await axios.put(`${import.meta.env.VITE_API_URL}/api/users/profile`, {
         profileData,
         onboardingCompleted: true,
@@ -106,13 +105,12 @@ const OnboardingPage = () => {
           Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
       });
-  
-      // Aquí puedes continuar con el flujo después de un onboarding exitoso
+
       const updatedUser = { ...user, onboardingCompleted: true, profileData };
-      localStorage.setItem("user", JSON.stringify(updatedUser)); // Actualiza el user en el localStorage
-      login(localStorage.getItem("token"), updatedUser); // Realiza login con el usuario actualizado
-      navigate("/pagina1", { replace: true }); // Redirige al siguiente paso del onboarding
-  
+      localStorage.setItem("user", JSON.stringify(updatedUser));
+      await login(localStorage.getItem("token"), updatedUser, true); // ahora skipRedirect = true
+      navigate("/pagina1", { replace: true });
+
     } catch (error) {
       console.error("❌ Error al guardar datos del onboarding:", error);
     }
@@ -124,7 +122,6 @@ const OnboardingPage = () => {
         {step === 1 && (
           <form className="form">
             <h2 className="bantx-title">📄 Completemos tu información</h2>
-
             <input type="text" name="nombre" placeholder="Nombre" className="input" value={form.nombre} onChange={handleChange} required />
             <input type="text" name="apellido" placeholder="Apellido" className="input" value={form.apellido} onChange={handleChange} required />
 
@@ -148,7 +145,7 @@ const OnboardingPage = () => {
                 ))}
               </select>
             </div>
-    
+
             <select name="nacionalidad" value={form.nacionalidad} onChange={handleChange} className="input" required>
               <option value="">Nacionalidad</option>
               {paises.map((p) => (

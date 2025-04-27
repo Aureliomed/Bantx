@@ -57,10 +57,12 @@ export const AuthProvider = ({ children }) => {
     .finally(() => setLoading(false));
     }, []);
 
-    const login = async (token, userData) => {
+    const login = async (token, userData, skipRedirect = false) => {
       localStorage.setItem("token", token);
       localStorage.setItem("user", JSON.stringify(userData));
       setUser(userData);
+    
+      if (skipRedirect) return; // 👈
     
       if (userData.role === "admin") {
         navigate("/admin", { replace: true });
@@ -70,7 +72,7 @@ export const AuthProvider = ({ children }) => {
         navigate("/onboarding", { replace: true });
       }
     };
-    
+        
   const logout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
