@@ -68,9 +68,9 @@ exports.registerUser = async (req, res) => {
 // 📌 Registro de administrador
 exports.createAdmin = async (req, res) => {
   try {
-    const { email, password, secretKey } = req.body;
+    const { username, email, password, secretKey } = req.body;
 
-    if (!email || !password || !secretKey) {
+    if (!username || !email || !password || !secretKey) {
       return res.status(400).json({ message: "❌ Todos los campos son requeridos." });
     }
 
@@ -79,10 +79,21 @@ exports.createAdmin = async (req, res) => {
     }
 
     const exists = await User.findOne({ email });
-    if (exists) return res.status(400).json({ message: "⚠️ Administrador ya existe." });
+    if (exists) {
+      return res.status(400).json({ message: "⚠️ Este administrador ya existe." });
+    }
 
     const hashedPassword = await bcrypt.hash(password, 10);
-    const newAdmin = new User({ email, password: hashedPassword, role: "admin" });
+
+    const newAdmin = new User({
+      username,
+      email,
+      password: hashedPassword,
+      role: "admin",
+      profileData: {
+        fullName: username, // 🧩 puedes asignar el username como fullName si quieres
+      },
+    });
 
     await newAdmin.save();
     return res.status(201).json({ message: "✅ Administrador creado exitosamente." });
