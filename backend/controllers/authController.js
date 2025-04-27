@@ -7,57 +7,31 @@ const User = require("../models/User");
 const logger = require("../utils/logger");
 const { sendEmail } = require("../utils/sendEmail");
 
-// 📌 Cargar claves para RS256 (Validación de existencia)
-const privateKeyPath = path.join(__dirname, "../keys/private.pem");
-const publicKeyPath = path.join(__dirname, "../keys/public.pem");
+// 📌 Cargar claves RSA
+const privateKey = fs.readFileSync(path.join(__dirname, "../keys/private.pem"), "utf8");
+const publicKey = fs.readFileSync(path.join(__dirname, "../keys/public.pem"), "utf8");
 
-if (!fs.existsSync(privateKeyPath) || !fs.existsSync(publicKeyPath)) {
-  throw new Error("❌ ERROR: Claves RSA no encontradas. Genera las claves con OpenSSL.");
-}
+// 📌 Generadores de Tokens
+const generateAccessToken = (userId, role) => jwt.sign({ id: userId, role }, privateKey, { algorithm: "RS256", expiresIn: "15m" });
+const generateRefreshToken = (userId) => jwt.sign({ id: userId }, privateKey, { algorithm: "RS256", expiresIn: "7d" });
 
-const privateKey = fs.readFileSync(privateKeyPath, "utf8");
-const publicKey = fs.readFileSync(publicKeyPath, "utf8");
+// 📌 Verificar Token
+const verifyToken = (token) => jwt.verify(token, publicKey, { algorithms: ["RS256"] });
 
-// 📌 Generar Access Token con firma RS256
-const generateAccessToken = (userId, role) => {
-  return jwt.sign({ id: userId, role }, privateKey, {
-    algorithm: "RS256",
-    expiresIn: "15m",
-  });
-};
-
-// 📌 Generar Refresh Token con firma RS256
-const generateRefreshToken = (userId) => {
-  return jwt.sign({ id: userId }, privateKey, {
-    algorithm: "RS256",
-    expiresIn: "7d",
-  });
-};
-
-// 📌 Verificar Token con RS256
-const verifyToken = (token) => {
-  return jwt.verify(token, publicKey, { algorithms: ["RS256"] });
-};
-
-// ✅ Registro de usuario con sistema de referidos
+// 📌 Registro de usuario
 exports.registerUser = async (req, res) => {
   try {
     const { username, email, password, profileData, referredBy } = req.body;
 
     if (!username || !email || !password) {
-      return res.status(400).json({ message: "⚠️ Todos los campos obligatorios deben ser completados." });
+      return res.status(400).json({ message: "⚠️ Todos los campos son requeridos." });
     }
 
-    const existingEmail = await User.findOne({ email });
-    const existingUsername = await User.findOne({ username });
+    const emailExists = await User.findOne({ email });
+    const usernameExists = await User.findOne({ username });
 
-    if (existingEmail) {
-      return res.status(400).json({ message: "⚠️ El correo ya está registrado." });
-    }
-
-    if (existingUsername) {
-      return res.status(400).json({ message: "⚠️ El nombre de usuario ya está en uso." });
-    }
+    if (emailExists) return res.status(400).json({ message: "⚠️ El correo ya está registrado." });
+    if (usernameExists) return res.status(400).json({ message: "⚠️ El nombre de usuario ya está en uso." });
 
     const newUser = new User({
       username,
@@ -69,29 +43,29 @@ exports.registerUser = async (req, res) => {
       },
     });
 
-    // 🎁 Si hay un código de referido, buscar y asignar el usuario que refirió
+    // Asignar referido si existe
     if (referredBy) {
       const referrer = await User.findOne({ referralCode: referredBy.trim().toUpperCase() });
       if (referrer) {
         newUser.referredBy = referrer._id;
-        referrer.rewardPoints += 10; // puedes ajustar esta cantidad
+        referrer.rewardPoints += 10;
         await referrer.save();
       } else {
-        console.warn(`⚠️ Código de referido no válido: ${referredBy}`);
+        logger.warn(`⚠️ Código de referido inválido: ${referredBy}`);
       }
     }
 
     await newUser.save();
-    logger.info(`✅ Nuevo usuario registrado: ${username}`);
-
+    logger.info(`✅ Usuario registrado: ${username}`);
     return res.status(201).json({ message: "✅ Registro exitoso." });
+
   } catch (err) {
-    logger.error("❌ Error en el registro:", err);
+    logger.error("❌ Error en registro:", err);
     return res.status(500).json({ message: "❌ Error interno del servidor." });
   }
 };
 
-// 📌 Registro manual de administrador
+// 📌 Registro de administrador
 exports.createAdmin = async (req, res) => {
   try {
     const { email, password, secretKey } = req.body;
@@ -104,24 +78,22 @@ exports.createAdmin = async (req, res) => {
       return res.status(403).json({ message: "🚫 Acceso no autorizado." });
     }
 
-    const existingUser = await User.findOne({ email });
-    if (existingUser) {
-      return res.status(400).json({ message: "⚠️ Este administrador ya existe." });
-    }
+    const exists = await User.findOne({ email });
+    if (exists) return res.status(400).json({ message: "⚠️ Administrador ya existe." });
 
     const hashedPassword = await bcrypt.hash(password, 10);
     const newAdmin = new User({ email, password: hashedPassword, role: "admin" });
 
     await newAdmin.save();
-    return res.status(201).json({ message: "✅ Administrador creado correctamente." });
-  } catch (error) {
-    console.error("❌ Error creando admin:", error);
-    return res.status(500).json({ message: "❌ Error del servidor." });
+    return res.status(201).json({ message: "✅ Administrador creado exitosamente." });
+
+  } catch (err) {
+    logger.error("❌ Error creando admin:", err);
+    return res.status(500).json({ message: "❌ Error en el servidor." });
   }
 };
 
-
-// 📌 Login de usuario con almacenamiento seguro del Refresh Token
+// 📌 Login
 exports.login = async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -141,10 +113,10 @@ exports.login = async (req, res) => {
       sameSite: "Strict",
     });
 
-    logger.info(`✅ Inicio de sesión exitoso: ${user.email}`);
+    logger.info(`✅ Login exitoso: ${user.email}`);
 
     return res.status(200).json({
-      message: "✅ Inicio de sesión exitoso",
+      message: "✅ Inicio de sesión exitoso.",
       token: accessToken,
       user: {
         id: user._id,
@@ -159,41 +131,32 @@ exports.login = async (req, res) => {
       },
     });
 
-  } catch (error) {
-    logger.error("❌ Error en login:", error);
-    return res.status(500).json({ message: "❌ Error en el servidor." });
+  } catch (err) {
+    logger.error("❌ Error en login:", err);
+    return res.status(500).json({ message: "❌ Error interno del servidor." });
   }
 };
 
-// 📌 Generar un nuevo Access Token con Refresh Token
+// 📌 Refresh Token
 exports.refreshToken = async (req, res) => {
   try {
-    const refreshToken = req.cookies.refreshToken;
+    const { refreshToken } = req.cookies;
+    if (!refreshToken) return res.status(403).json({ message: "🚫 No autorizado." });
 
-    if (!refreshToken) {
-      return res.status(403).json({ message: "🚫 No autorizado." });
-    }
+    const decoded = verifyToken(refreshToken);
+    const user = await User.findById(decoded.id);
+    if (!user) return res.status(403).json({ message: "🚫 Usuario no encontrado." });
 
-    jwt.verify(refreshToken, publicKey, { algorithms: ["RS256"] }, async (err, decoded) => {
-      if (err) {
-        return res.status(403).json({ message: "⚠️ Token inválido o expirado." });
-      }
+    const newAccessToken = generateAccessToken(user._id, user.role);
+    return res.status(200).json({ accessToken: newAccessToken });
 
-      const user = await User.findById(decoded.id);
-      if (!user) {
-        return res.status(403).json({ message: "🚫 Usuario no encontrado." });
-      }
-
-      const newAccessToken = generateAccessToken(user._id, user.role);
-      return res.status(200).json({ accessToken: newAccessToken });
-    });
-  } catch (error) {
-    logger.error("❌ Error al refrescar token:", error);
-    return res.status(500).json({ message: "❌ Error en el servidor." });
+  } catch (err) {
+    logger.error("❌ Error en refreshToken:", err);
+    return res.status(500).json({ message: "❌ Error interno del servidor." });
   }
 };
 
-// 📌 Cerrar sesión y eliminar el Refresh Token
+// 📌 Logout
 exports.logout = (req, res) => {
   res.clearCookie("refreshToken");
   return res.status(200).json({ message: "✅ Cierre de sesión exitoso." });
@@ -208,12 +171,12 @@ exports.getAuthenticatedUser = async (req, res) => {
     }
     return res.status(200).json(user);
   } catch (err) {
-    logger.error("❌ Error al obtener usuario:", err);
-    return res.status(500).json({ message: "❌ Error en el servidor." });
+    logger.error("❌ Error obteniendo usuario:", err);
+    return res.status(500).json({ message: "❌ Error interno del servidor." });
   }
 };
 
-// 📌 Obtener todos los usuarios (Solo Admins)
+// 📌 Obtener todos los usuarios (solo admin)
 exports.getAllUsers = async (req, res) => {
   try {
     if (req.user.role !== "admin") {
@@ -222,33 +185,25 @@ exports.getAllUsers = async (req, res) => {
     const users = await User.find().select("-password");
     return res.status(200).json(users);
   } catch (err) {
-    logger.error("❌ Error al obtener usuarios:", err);
-    return res.status(500).json({ message: "❌ Error en el servidor." });
+    logger.error("❌ Error obteniendo usuarios:", err);
+    return res.status(500).json({ message: "❌ Error interno del servidor." });
   }
 };
 
-
-// 📌 Olvido de contraseña (📩 Envía un correo con un link para resetear)
+// 📌 Olvidé mi contraseña
 exports.forgotPassword = async (req, res) => {
   try {
     const { email } = req.body;
-
-    if (!email) {
-      return res.status(400).json({ message: "El email es requerido." });
-    }
+    if (!email) return res.status(400).json({ message: "⚠️ Email requerido." });
 
     const sanitizedEmail = email.trim().toLowerCase();
     const user = await User.findOne({ email: sanitizedEmail });
-
-    if (!user) {
-      return res.status(404).json({ message: "No existe una cuenta con este email." });
-    }
+    if (!user) return res.status(404).json({ message: "❌ Cuenta no encontrada." });
 
     const resetToken = crypto.randomBytes(32).toString("hex");
-    const hashedToken = await bcrypt.hash(resetToken, 10);
-
-    user.resetPasswordToken = hashedToken;
+    user.resetPasswordToken = await bcrypt.hash(resetToken, 10);
     user.resetPasswordExpires = Date.now() + 3600000; // 1 hora
+
     await user.save();
 
     const resetUrl = `${process.env.FRONTEND_URL}/reset-password/${resetToken}`;
@@ -258,33 +213,35 @@ exports.forgotPassword = async (req, res) => {
       subject: "Restablecimiento de contraseña",
       html: `
         <p>Hola <strong>${user.username}</strong>,</p>
-        <p>Hemos recibido una solicitud para restablecer tu contraseña.</p>
-        <p>Haz clic en el siguiente enlace para continuar:</p>
-        <p><a href="${resetUrl}" style="color:#4BB38D;">Restablecer contraseña</a></p>
+        <p>Haz clic en el siguiente enlace para restablecer tu contraseña:</p>
+        <p><a href="${resetUrl}">Restablecer contraseña</a></p>
         <p>Este enlace expirará en 1 hora.</p>
-        <p>Si tú no realizaste esta solicitud, simplemente ignora este mensaje.</p>
         <hr>
-        <p>Saludos,<br>Equipo de SAPIM</p>
-      `
+        <p>Equipo SAPIM</p>
+      `,
     });
 
-    logger.info(`✅ Correo de restablecimiento enviado a: ${user.email}`);
-    return res.status(200).json({ message: "Correo enviado para restablecer la contraseña." });
+    logger.info(`✅ Correo de recuperación enviado a: ${user.email}`);
+    return res.status(200).json({ message: "✅ Correo enviado correctamente." });
 
-  } catch (error) {
-    logger.error("❌ Error en forgotPassword:", error);
-    return res.status(500).json({ message: "Error en el servidor." });
+  } catch (err) {
+    logger.error("❌ Error en forgotPassword:", err);
+    return res.status(500).json({ message: "❌ Error interno del servidor." });
   }
 };
 
-// 📌 Restablecimiento de contraseña
+// 📌 Restablecer contraseña
 exports.resetPassword = async (req, res) => {
   try {
     const { token, newPassword } = req.body;
-    const user = await User.findOne({ resetPasswordToken: token, resetPasswordExpires: { $gt: Date.now() } });
+
+    const user = await User.findOne({
+      resetPasswordToken: token,
+      resetPasswordExpires: { $gt: Date.now() },
+    });
 
     if (!user) {
-      return res.status(400).json({ message: "El token es inválido o ha expirado." });
+      return res.status(400).json({ message: "❌ Token inválido o expirado." });
     }
 
     user.password = await bcrypt.hash(newPassword, 10);
@@ -292,11 +249,12 @@ exports.resetPassword = async (req, res) => {
     user.resetPasswordExpires = undefined;
 
     await user.save();
-    logger.info(`✅ Contraseña restablecida para: ${user.email}`);
+    logger.info(`✅ Contraseña actualizada para: ${user.email}`);
 
-    return res.status(200).json({ message: "Contraseña restablecida con éxito." });
-  } catch (error) {
-    logger.error("❌ Error en resetPassword:", error);
-    return res.status(500).json({ message: "Error en el servidor." });
+    return res.status(200).json({ message: "✅ Contraseña restablecida." });
+
+  } catch (err) {
+    logger.error("❌ Error en resetPassword:", err);
+    return res.status(500).json({ message: "❌ Error interno del servidor." });
   }
 };

@@ -3,38 +3,39 @@ const router = express.Router();
 const userController = require("../controllers/userController");
 const { verifyToken, checkRole } = require("../middlewares/authMiddleware");
 
-if (!userController.getAllUsers) {
-  throw new Error("❌ Error: getAllUsers no está definido en userController.js");
-}
-if (!userController.getProfile) {
-  throw new Error("❌ Error: getProfile no está definido en userController.js");
-}
-if (!userController.updateProfile) {
-  throw new Error("❌ Error: updateProfile no está definido en userController.js");
-}
-if (!userController.deleteUser) {
-  throw new Error("❌ Error: deleteUser no está definido en userController.js");
-}
+// 🔥 Validar que todos los métodos existan al iniciar
+[
+  "getAllUsers",
+  "getProfile",
+  "updateProfile",
+  "deleteUser",
+  "saveOnboardingData",
+  "getReferrals",
+].forEach(fn => {
+  if (typeof userController[fn] !== "function") {
+    throw new Error(`❌ Error: ${fn} no está definido en userController.js`);
+  }
+});
 
-// 📌 Asignación directa
-const getAllUsers = userController.getAllUsers;
-const getProfile = userController.getProfile;
-const updateProfile = userController.updateProfile;
-const deleteUser = userController.deleteUser;
-const getReferrals = userController.getReferrals;
+// ✅ Rutas protegidas
+router.use(verifyToken); // Aplica auth a todas las rutas debajo
 
-// ✅ NUEVA RUTA: Guardar datos de onboarding
-router.post("/onboarding", verifyToken, userController.saveOnboardingData);
+// 📋 Perfil del usuario
+router.get("/profile", userController.getProfile);
+router.put("/profile", userController.updateProfile);
 
-// 📌 Rutas protegidas
-router.get("/", verifyToken, checkRole(["admin"]), getAllUsers);
-router.get("/profile", verifyToken, getProfile);
-router.put("/profile", verifyToken, updateProfile);
-router.get("/referrals", verifyToken, getReferrals);
-router.delete("/:id", verifyToken, checkRole(["admin"]), deleteUser);
+// 🎯 Onboarding inicial
+router.post("/onboarding", userController.saveOnboardingData);
 
-// 📌 Manejo de rutas no definidas
-router.use((req, res) => {
+// 🫂 Referidos
+router.get("/referrals", userController.getReferrals);
+
+// 👑 Acciones solo para Admins
+router.get("/", checkRole(["admin"]), userController.getAllUsers);
+router.delete("/:id", checkRole(["admin"]), userController.deleteUser);
+
+// 🚫 Ruta no encontrada
+router.all("*", (req, res) => {
   res.status(404).json({ message: "🚫 Ruta no encontrada en userRoutes." });
 });
 
