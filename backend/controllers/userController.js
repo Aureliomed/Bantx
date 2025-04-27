@@ -32,26 +32,23 @@ exports.updateProfile = async (req, res) => {
       user.role = role;
     }
 
-    // ✅ Actualizar profileData (incluyendo wallet si se incluye)
+    // ✅ Actualizar profileData (asegurando wallet siempre)
     if (profileData && typeof profileData === "object") {
-      // Si viene wallet, actualizamos solo campos válidos
+      // Asegurar que siempre exista un wallet en el usuario
+      if (!user.profileData.wallet || typeof user.profileData.wallet !== "object") {
+        user.profileData.wallet = { usdt: 0, usdc: 0 };
+      }
+
+      // Si viene wallet nuevo, actualizar sus valores
       if (profileData.wallet && typeof profileData.wallet === "object") {
         user.profileData.wallet = {
           ...user.profileData.wallet,
-          ...profileData.wallet // Actualiza solo los valores proporcionados en profileData.wallet
+          ...profileData.wallet,
         };
-        delete profileData.wallet; // evitamos sobrescribir después
+        delete profileData.wallet; // Evitar sobrescribir luego
       }
 
-      // Si no viene wallet, aseguramos que siempre tenga valores predeterminados
-      if (!profileData.wallet) {
-        user.profileData.wallet = {
-          usdt: 0,
-          usdc: 0, // Asignar valores predeterminados si no se incluye wallet
-        };
-      }
-
-      // Actualizar los demás campos de profileData
+      // Actualizar otros campos de profileData
       user.profileData = {
         ...user.profileData,
         ...profileData,
