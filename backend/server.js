@@ -25,11 +25,6 @@ const allowedOrigins = [
   "https://bantx.vercel.app",
   "https://bantx-git-main-aureliomeds-projects.vercel.app",
   "https://bantx-4wmrj67z3-aureliomeds-projects.vercel.app",
-  "https://insurance-app-xi.vercel.app",
-  "https://wealthy-kellie-aurelio104-48c9a52a.koyeb.app",
-  "https://insurance-3gzup83o0-aurelio104s-projects.vercel.app",
-  "https://insurance-frq4np317-aureli104s-projects.vercel.app",
-  "https://insurance-99hv2wop0-aureli104s-projects.vercel.app",
 ];
 
 app.use(cors({
@@ -88,11 +83,15 @@ const userRoutes = require("./routes/userRoutes");
 const emailRoutes = require("./routes/emailRoutes");
 const paymentsRoutes = require("./routes/payments");
 
+// Rutas de verificación de teléfono
+const phoneVerificationRoutes = require('./routes/phoneVerificationRoutes');  // Ruta añadida
+
 const routes = {
   "/api/auth": authRoutes,
   "/api/users": userRoutes,
   "/api/emails": emailRoutes,
   "/api/payments": paymentsRoutes,
+  "/api/verify-phone": phoneVerificationRoutes, // Añadimos la ruta de verificación de teléfono
 };
 
 Object.entries(routes).forEach(([path, route]) => {

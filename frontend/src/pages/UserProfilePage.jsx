@@ -1,182 +1,97 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import axios from "axios";
-import "../styles/globals.css";
-import "../styles/user-dashboard.css";
-import { Pencil, Key, UserCheck, Lock } from "lucide-react";
-import { toast } from "react-toastify";
+import { CheckCircle, XCircle } from "lucide-react"; // Íconos de verificación
+import "../styles/user-profile.css";
 
 const UserProfilePage = () => {
-  const { user, logout } = useAuth();
-  const navigate = useNavigate();
-  const [form, setForm] = useState({ ...user.profileData });
-  const [isEditing, setIsEditing] = useState(false);
-  const [is2FAEnabled, setIs2FAEnabled] = useState(user.settings.pinEnabled);
-  const [isKYCVerified, setIsKYCVerified] = useState(user.kycVerified);
-  const [newPin, setNewPin] = useState("");
-  const [confirmPin, setConfirmPin] = useState("");
+  const { user } = useAuth();
+  const [isPhoneVerified, setIsPhoneVerified] = useState(user.profileData.phoneVerified);
+  const [verificationCode, setVerificationCode] = useState("");  // Código ingresado por el usuario
+  const [isCodeSent, setIsCodeSent] = useState(false); // Indica si el código ha sido enviado
+  const [isVerifying, setIsVerifying] = useState(false); // Indica si estamos verificando el código
 
-  useEffect(() => {
-    // Check if the user is fully onboarded and verified
-    if (!user.onboardingCompleted) {
-      navigate("/onboarding", { replace: true });
-    }
-  }, [user, navigate]);
-
-  const handleEdit = () => {
-    setIsEditing(!isEditing);
-  };
-
-  const handleSave = async () => {
+  const sendVerificationCode = async () => {
+    setIsVerifying(true);
     try {
-      // Update the user profile with the changes
-      await axios.put(`${import.meta.env.VITE_API_URL}/api/users/profile`, {
-        profileData: form,
-      }, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
+      const response = await axios.post(`${import.meta.env.VITE_API_URL}/api/verify-phone`, {
+        phoneNumber: user.profileData.telefono,
       });
-      toast.success("¡Perfil actualizado correctamente!");
-      setIsEditing(false);
+      if (response.data.success) {
+        setIsCodeSent(true);  // El código ha sido enviado
+      }
     } catch (error) {
-      toast.error("❌ Error al actualizar el perfil");
+      console.error("Error al enviar el código de verificación:", error);
+    } finally {
+      setIsVerifying(false);
     }
   };
 
-  const toggle2FA = async () => {
+  const verifyCode = async () => {
     try {
-      // Send a request to enable/disable 2FA
-      await axios.put(`${import.meta.env.VITE_API_URL}/api/users/enable-2fa`, {
-        enable: !is2FAEnabled,
-      }, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
+      const response = await axios.post(`${import.meta.env.VITE_API_URL}/api/verify-code`, {
+        phoneNumber: user.profileData.telefono,
+        code: verificationCode,
       });
-      setIs2FAEnabled(!is2FAEnabled);
-      toast.success(`2FA ${is2FAEnabled ? 'desactivado' : 'activado'} correctamente`);
+      if (response.data.success) {
+        setIsPhoneVerified(true);  // Actualizamos el estado de verificación
+      }
     } catch (error) {
-      toast.error("❌ Error al cambiar el estado de 2FA");
-    }
-  };
-
-  const handleChangePin = async () => {
-    if (newPin !== confirmPin) {
-      toast.error("❌ Los PINs no coinciden");
-      return;
-    }
-
-    try {
-      // Update PIN in the backend
-      await axios.put(`${import.meta.env.VITE_API_URL}/api/users/change-pin`, {
-        newPin,
-      }, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-      });
-      toast.success("✅ PIN actualizado correctamente");
-      setNewPin("");
-      setConfirmPin("");
-    } catch (error) {
-      toast.error("❌ Error al cambiar el PIN");
+      console.error("Error al verificar el código:", error);
     }
   };
 
   return (
-    <div className="layout-page fade-in">
-      <div className="content-box">
-        {/* User Header */}
-        <div className="user-header">
-          <div className="user-header-left">
-            <div className="user-avatar">{user.username.charAt(0).toUpperCase()}</div>
-            <div className="user-info">
-              <div className="username">@{user.username}</div>
-              <div className="status">{isKYCVerified ? "Verificado" : "Pendiente KYC"}</div>
-            </div>
-          </div>
-          {/* Edit Button */}
-          <button className="edit-button" onClick={handleEdit}>
-            <Pencil size={16} />
-          </button>
+    <div className="user-profile-container">
+      <div className="user-header">
+        <div className="user-avatar">{user.username.charAt(0).toUpperCase()}</div>
+        <div className="user-info">
+          <div className="username">@{user.username}</div>
+          <div className="status">{user.kycVerified ? "Verificado" : "Pendiente KYC"}</div>
         </div>
+      </div>
 
-        {/* Profile Form */}
-        <form className="form">
-          <h2>Información del Usuario</h2>
-
-          {/* Editable fields */}
-          {isEditing ? (
-            <>
-              <input
-                type="text"
-                name="nombre"
-                value={form.nombre}
-                onChange={(e) => setForm({ ...form, nombre: e.target.value })}
-              />
-              <input
-                type="text"
-                name="apellido"
-                value={form.apellido}
-                onChange={(e) => setForm({ ...form, apellido: e.target.value })}
-              />
-              <input
-                type="text"
-                name="telefono"
-                value={form.telefono}
-                onChange={(e) => setForm({ ...form, telefono: e.target.value })}
-              />
-              <button type="button" onClick={handleSave} className="button">Guardar Cambios</button>
-            </>
+      <div className="form">
+        <h2>Información del Usuario</h2>
+        
+        <p><strong>Nombre:</strong> {user.profileData.nombre}</p>
+        <p><strong>Apellido:</strong> {user.profileData.apellido}</p>
+        
+        {/* Teléfono */}
+        <p><strong>Teléfono:</strong> {user.profileData.telefono} 
+          {isPhoneVerified ? (
+            <CheckCircle size={16} color="green" style={{ marginLeft: "8px" }} />
           ) : (
-            <div>
-              <p><strong>Nombre:</strong> {form.nombre}</p>
-              <p><strong>Apellido:</strong> {form.apellido}</p>
-              <p><strong>Teléfono:</strong> {form.telefono}</p>
-            </div>
+            <XCircle size={16} color="red" style={{ marginLeft: "8px" }} />
           )}
+        </p>
 
-          {/* 2FA Toggle */}
-          <div className="user-card">
-            <h3>Seguridad</h3>
-            <button onClick={toggle2FA} className="button">
-              {is2FAEnabled ? "Desactivar 2FA" : "Activar 2FA"}
-              <Key size={16} />
-            </button>
-          </div>
+        {/* Botón de verificación */}
+        {!isPhoneVerified && !isCodeSent && (
+          <button onClick={sendVerificationCode} className="button" disabled={isVerifying}>
+            {isVerifying ? "Enviando..." : "Enviar código de verificación"}
+          </button>
+        )}
 
-          {/* PIN Change */}
-          <div className="user-card">
-            <h3>Cambiar PIN</h3>
+        {isCodeSent && !isPhoneVerified && (
+          <div>
             <input
-              type="password"
-              placeholder="Nuevo PIN"
-              value={newPin}
-              onChange={(e) => setNewPin(e.target.value)}
+              type="text"
+              placeholder="Código de verificación"
+              value={verificationCode}
+              onChange={(e) => setVerificationCode(e.target.value)}
+              className="input"
             />
-            <input
-              type="password"
-              placeholder="Confirmar PIN"
-              value={confirmPin}
-              onChange={(e) => setConfirmPin(e.target.value)}
-            />
-            <button type="button" onClick={handleChangePin} className="button">Actualizar PIN</button>
+            <button onClick={verifyCode} className="button">Verificar Código</button>
           </div>
+        )}
 
-          {/* KYC Status */}
-          <div className="user-card">
-            <h3>Verificación KYC</h3>
-            {isKYCVerified ? (
-              <p><UserCheck size={16} /> KYC Verificado</p>
-            ) : (
-              <button onClick={() => navigate("/kyc")} className="button">
-                Completar KYC
-              </button>
-            )}
-          </div>
-        </form>
+        {/* Otros botones */}
+        <div>
+          <button className="button">Activar 2FA</button>
+          <button className="button">Actualizar PIN</button>
+          <button className="button">Completar KYC</button>
+        </div>
       </div>
     </div>
   );
