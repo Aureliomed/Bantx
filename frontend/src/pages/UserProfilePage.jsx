@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
 import axios from "axios";
 import { CheckCircle, XCircle } from "lucide-react"; // Íconos de verificación
-import "../styles/user-profile.css";
+import "../styles/user-dashboard.css";
 
 const UserProfilePage = () => {
   const { user } = useAuth();
