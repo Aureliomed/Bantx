@@ -1,58 +1,102 @@
+// backend/services/phoneVerificationService.js
+
 const { makeWASocket, useSingleFileAuthState } = require('@adiwajshing/baileys');
 const QRCode = require('qrcode');
+const User = require("../models/User");
 
-// Función para enviar el código de verificación por WhatsApp
+// Enviar código de verificación por WhatsApp
 const sendVerificationCodeToPhone = async (phoneNumber) => {
   const { state, saveState } = useSingleFileAuthState('auth_info.json');
   const sock = makeWASocket({ auth: state });
 
   await sock.connect();
 
-  const code = Math.floor(100000 + Math.random() * 900000); // Genera un código aleatorio de 6 dígitos
+  const code = Math.floor(100000 + Math.random() * 900000);
   const message = `Tu código de verificación es: ${code}`;
 
   try {
-    await sock.sendMessage(phoneNumber + '@s.whatsapp.net', { text: message });
+    await sock.sendMessage(`${phoneNumber}@s.whatsapp.net`, { text: message });
     saveState();
-    return { success: true, code }; // Retornamos el código generado para compararlo después
+
+    const user = await User.findOne({ "profileData.phone": phoneNumber });
+    if (!user) return { success: false, message: "Usuario no encontrado con ese teléfono." };
+
+    user.verification.code = code.toString();
+    user.verification.expires = new Date(Date.now() + 10 * 60 * 1000); // 10 minutos
+    await user.save();
+
+    return { success: true };
   } catch (error) {
-    console.error("Error al enviar el mensaje:", error);
-    return { success: false };
+    console.error("❌ Error al enviar el código:", error);
+    return { success: false, message: "No se pudo enviar el mensaje" };
   }
 };
 
-// Función para generar el QR de WhatsApp
+// Generar código QR para conectar WhatsApp Web
 const generateWhatsAppQRCode = async () => {
+  return new Promise(async (resolve, reject) => {
     const { state, saveState } = useSingleFileAuthState('auth_info.json');
-    const sock = makeWASocket({ auth: state });
-  
-    // Esperamos a que se genere el QR
-    sock.ev.on('qr', (qr) => {
-      QRCode.toDataURL(qr, (err, url) => {
-        if (err) {
-          console.error("Error generando el QR:", err);
-        } else {
-          console.log("QR generado");
-          return url;  // Retorna el URL del QR para mostrarlo en la página
-        }
-      });
-    });
-  
-    // Conectamos a WhatsApp
-    await sock.connect();
-  };
+    const sock = makeWASocket({ auth: state, printQRInTerminal: false });
 
-// Función para validar el código de verificación
+    sock.ev.on('connection.update', async (update) => {
+      const { qr, connection } = update;
+
+      if (qr) {
+        try {
+          const qrUrl = await QRCode.toDataURL(qr);
+          resolve(qrUrl);
+        } catch (err) {
+          reject("❌ Error generando el QR: " + err.message);
+        }
+      }
+
+      if (connection === 'open') {
+        console.log("✅ Conectado a WhatsApp");
+        saveState();
+      }
+
+      if (connection === 'close') {
+        console.log("🔴 Desconectado de WhatsApp");
+      }
+    });
+
+    try {
+      await sock.connect();
+    } catch (err) {
+      reject("❌ Error conectando con WhatsApp: " + err.message);
+    }
+  });
+};
+
+// Validar código ingresado por el usuario
 const validateVerificationCode = async (phoneNumber, code) => {
-  // Aquí puedes usar una base de datos o una lógica temporal para validar el código
-  // Por ejemplo, almacenando el código generado en la sesión del usuario o en una base de datos
-  // Este es un ejemplo básico sin persistencia real
-  const storedCode = 123456; // Aquí debes comparar con el código guardado temporalmente
-  return code === storedCode;
+  try {
+    const user = await User.findOne({ "profileData.phone": phoneNumber }).select("+verification.code +verification.expires");
+
+    if (!user) return { success: false, message: "Usuario no encontrado" };
+    if (!user.verification.code || !user.verification.expires)
+      return { success: false, message: "No se ha solicitado verificación" };
+
+    if (user.verification.code !== code)
+      return { success: false, message: "Código incorrecto" };
+
+    if (user.verification.expires < new Date())
+      return { success: false, message: "Código expirado" };
+
+    user.verification.phoneVerified = true;
+    user.verification.code = undefined;
+    user.verification.expires = undefined;
+    await user.save();
+
+    return { success: true };
+  } catch (error) {
+    console.error("❌ Error validando código:", error);
+    return { success: false, message: "Error interno" };
+  }
 };
 
 module.exports = {
   sendVerificationCodeToPhone,
-  validateVerificationCode,
   generateWhatsAppQRCode,
+  validateVerificationCode,
 };

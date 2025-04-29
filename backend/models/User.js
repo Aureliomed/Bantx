@@ -1,11 +1,13 @@
 const mongoose = require("mongoose");
 const bcrypt = require("bcryptjs");
 
+// 👜 Esquema de billetera
 const WalletSchema = new mongoose.Schema({
   usdt: { type: Number, default: 0 },
   usdc: { type: Number, default: 0 },
 }, { _id: false });
 
+// 🧾 Esquema de perfil del usuario
 const ProfileSchema = new mongoose.Schema({
   fullName: { type: String, trim: true },
   phone: { type: String, trim: true },
@@ -25,14 +27,20 @@ const ProfileSchema = new mongoose.Schema({
   wallet: { type: WalletSchema, default: () => ({}) },
 }, { _id: false });
 
+// ⚙️ Configuraciones de usuario
 const SettingsSchema = new mongoose.Schema({
   notificationsEnabled: { type: Boolean, default: true },
   darkMode: { type: Boolean, default: false },
   pinEnabled: { type: Boolean, default: false },
 }, { _id: false });
 
+// 💸 Historial de transacciones
 const TransactionSchema = new mongoose.Schema({
-  type: { type: String, enum: ["deposit", "withdrawal", "transfer", "loan"], required: true },
+  type: {
+    type: String,
+    enum: ["deposit", "withdrawal", "transfer", "loan"],
+    required: true,
+  },
   amount: { type: Number, required: true },
   currency: { type: String, required: true },
   to: String,
@@ -41,6 +49,7 @@ const TransactionSchema = new mongoose.Schema({
   date: { type: Date, default: Date.now },
 }, { _id: false });
 
+// 👤 Esquema principal de usuario
 const UserSchema = new mongoose.Schema({
   username: {
     type: String,
@@ -73,6 +82,14 @@ const UserSchema = new mongoose.Schema({
     enum: ["active", "blocked", "inactive"],
     default: "active",
   },
+
+  // ✅ Verificación (agrupado)
+  verification: {
+    code: { type: String, select: false },
+    expires: { type: Date, select: false },
+    phoneVerified: { type: Boolean, default: false }
+  },
+
   resetPasswordToken: { type: String, select: false },
   resetPasswordExpires: { type: Date, select: false },
   profileData: { type: ProfileSchema, default: () => ({}) },
@@ -84,15 +101,18 @@ const UserSchema = new mongoose.Schema({
   rewardPoints: { type: Number, default: 0 },
 }, { timestamps: true });
 
-// 🔐 Middleware para hash de password y generar referral code
+// 🔐 Middleware: hash de contraseña + generación de referralCode
 UserSchema.pre("save", async function (next) {
   if (this.isModified("password") && !this.password.startsWith("$2a$")) {
     this.password = await bcrypt.hash(this.password, 10);
   }
 
   if (!this.referralCode) {
-    const cleanBase = (this.username || this.email).replace(/[^a-zA-Z0-9]/g, "").toUpperCase().slice(0, 4);
-    const randomDigits = Math.floor(1000 + Math.random() * 9000); // 4 dígitos aleatorios
+    const cleanBase = (this.username || this.email)
+      .replace(/[^a-zA-Z0-9]/g, "")
+      .toUpperCase()
+      .slice(0, 4);
+    const randomDigits = Math.floor(1000 + Math.random() * 9000);
     this.referralCode = `${cleanBase}${randomDigits}`;
   }
 

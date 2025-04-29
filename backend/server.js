@@ -1,5 +1,3 @@
-// src/server.js
-
 require("dotenv").config();
 const express = require("express");
 const mongoose = require("mongoose");
@@ -12,11 +10,11 @@ const logger = require("./utils/logger");
 const { startSMTPServer } = require("./config/smtpServer");
 
 const app = express();
-app.set("trust proxy", true); // ⚡️ Correcto para entornos como Vercel/Koyeb
+app.set("trust proxy", true);
 
 const PORT = process.env.PORT || 5000;
 
-// 🔒 Seguridad
+// 🔐 Seguridad
 app.use(helmet());
 
 // 🌐 Configuración CORS segura
@@ -41,18 +39,18 @@ app.use(cors({
   allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With", "Accept"],
 }));
 
-// 🔐 Middleware de datos
+// 🧠 Parsers
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// 🚫 Límite de solicitudes
+// 🚫 Límite de peticiones
 app.use(rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 100,
   message: "🚫 Demasiadas solicitudes, intenta más tarde.",
 }));
 
-// 📅 MongoDB
+// 📅 Conexión MongoDB
 (async () => {
   try {
     if (!process.env.MONGO_URI) {
@@ -63,64 +61,49 @@ app.use(rateLimit({
     await mongoose.connect(process.env.MONGO_URI);
     logger.info("✅ Conectado a MongoDB correctamente.");
 
-    // Verificación extra: contar usuarios
     const User = require("./models/User");
     const userCount = await User.countDocuments();
-    logger.info(`📊 Usuarios registrados en MongoDB: ${userCount}`);
+    logger.info(`📊 Usuarios registrados: ${userCount}`);
 
-    // Iniciar servidor SMTP
     startSMTPServer();
 
   } catch (err) {
-    logger.error(`❌ Error de conexión a MongoDB: ${err.message}`);
+    logger.error(`❌ Error de conexión MongoDB: ${err.message}`);
     process.exit(1);
   }
 })();
 
-// 📜 Rutas API
+// 📜 Rutas
 const authRoutes = require("./routes/authRoutes");
 const userRoutes = require("./routes/userRoutes");
 const emailRoutes = require("./routes/emailRoutes");
 const paymentsRoutes = require("./routes/payments");
+const phoneVerificationRoutes = require("./routes/phoneVerificationRoutes"); // ✅
 
-// Rutas de verificación de teléfono
-const phoneVerificationRoutes = require('./routes/phoneVerificationRoutes');  // Ruta añadida
+app.use("/api/auth", authRoutes);
+app.use("/api/users", userRoutes);
+app.use("/api/emails", emailRoutes);
+app.use("/api/payments", paymentsRoutes);
+app.use("/api/verify-phone", phoneVerificationRoutes); // ✅
 
-const routes = {
-  "/api/auth": authRoutes,
-  "/api/users": userRoutes,
-  "/api/emails": emailRoutes,
-  "/api/payments": paymentsRoutes,
-  "/api/verify-phone": phoneVerificationRoutes, // Añadimos la ruta de verificación de teléfono
-};
-
-Object.entries(routes).forEach(([path, route]) => {
-  if (!route) {
-    logger.error(`❌ Ruta ${path} no importada.`);
-    process.exit(1);
-  }
-  app.use(path, route);
-});
-
-// 🌐 Ruta de prueba
 app.get("/", (req, res) => {
   res.status(200).json({ message: "✅ Backend funcionando." });
 });
 
-// 🚫 404 handler
+// ❌ 404
 app.use((req, res) => {
   res.status(404).json({ message: "🚫 Ruta no encontrada." });
 });
 
-// 📉 Global error handler
+// 🧨 Error global
 app.use((err, req, res, next) => {
-  logger.error(`❌ Error servidor: ${err.message}`);
+  logger.error(`❌ Error del servidor: ${err.message}`);
   if (!res.headersSent) {
     res.status(err.status || 500).json({ message: err.message || "Error interno" });
   }
 });
 
-// 🌌 WebSocket Server
+// 🌐 WebSocket
 const server = http.createServer(app);
 const io = socketIo(server, {
   cors: {

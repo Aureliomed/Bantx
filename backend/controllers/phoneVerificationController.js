@@ -1,47 +1,57 @@
-const axios = require('axios');  // Usaremos axios para las solicitudes HTTP si es necesario
-const { sendVerificationCodeToPhone, validateVerificationCode } = require('../services/phoneVerificationService');
+// backend/controllers/phoneVerificationController.js
 
-// Función para enviar el código de verificación al teléfono
-const sendVerificationCode = async (req, res) => {
-  const { phoneNumber } = req.body;
-
-  try {
-    // Llamada a servicio para enviar el código de verificación
-    const response = await sendVerificationCodeToPhone(phoneNumber);
-    
-    if (response.success) {
-      return res.status(200).json({ success: true, message: 'Código de verificación enviado correctamente' });
-    } else {
-      return res.status(500).json({ success: false, message: 'Error al enviar el código de verificación' });
+const {
+    sendVerificationCodeToPhone,
+    generateWhatsAppQRCode,
+    validateVerificationCode,
+  } = require("../services/phoneVerificationService");
+  
+  // Enviar código a un número
+  const sendCode = async (req, res) => {
+    const { phoneNumber } = req.body;
+  
+    if (!phoneNumber) {
+      return res.status(400).json({ success: false, message: "Falta el número de teléfono." });
     }
-  } catch (error) {
-    console.error("Error al enviar el código:", error);
-    return res.status(500).json({ success: false, message: 'Error al procesar la solicitud' });
-  }
-};
-
-// Función para verificar el código ingresado por el usuario
-const verifyCode = async (req, res) => {
-  const { phoneNumber, code } = req.body;
-
-  try {
-    // Validamos el código con un servicio
-    const isValid = await validateVerificationCode(phoneNumber, code);
-    
-    if (isValid) {
-      // Aquí actualizas el estado del teléfono como verificado en la base de datos
-      // Ejemplo: `await User.update({ phoneVerified: true })`
-      return res.status(200).json({ success: true, message: 'Número de teléfono verificado correctamente' });
-    } else {
-      return res.status(400).json({ success: false, message: 'Código incorrecto' });
+  
+    const result = await sendVerificationCodeToPhone(phoneNumber);
+    if (!result.success) {
+      return res.status(500).json({ success: false, message: result.message || "Error al enviar el código." });
     }
-  } catch (error) {
-    console.error("Error al verificar el código:", error);
-    return res.status(500).json({ success: false, message: 'Error al procesar la solicitud' });
-  }
-};
-
-module.exports = {
-  sendVerificationCode,
-  verifyCode,
-};
+  
+    return res.status(200).json({ success: true, message: "Código enviado correctamente." });
+  };
+  
+  // Verificar código ingresado por el usuario
+  const verifyCode = async (req, res) => {
+    const { phoneNumber, code } = req.body;
+  
+    if (!phoneNumber || !code) {
+      return res.status(400).json({ success: false, message: "Faltan datos." });
+    }
+  
+    const result = await validateVerificationCode(phoneNumber, code);
+    if (!result.success) {
+      return res.status(400).json({ success: false, message: result.message });
+    }
+  
+    return res.status(200).json({ success: true, message: "Teléfono verificado exitosamente." });
+  };
+  
+  // Generar QR para vincular el bot de WhatsApp
+  const getQr = async (req, res) => {
+    try {
+      const qrUrl = await generateWhatsAppQRCode();
+      return res.status(200).json({ success: true, qrUrl });
+    } catch (error) {
+      console.error("❌ Error al generar QR:", error);
+      return res.status(500).json({ success: false, message: "No se pudo generar el QR." });
+    }
+  };
+  
+  module.exports = {
+    sendCode,
+    verifyCode,
+    getQr,
+  };
+  

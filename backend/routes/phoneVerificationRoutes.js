@@ -1,24 +1,20 @@
-const express = require('express');
+// backend/routes/phoneVerificationRoutes.js
+
+const express = require("express");
 const router = express.Router();
-const { sendVerificationCode, verifyCode } = require('../controllers/phoneVerificationController');
-const { generateWhatsAppQRCode } = require('../services/phoneVerificationService');
+const {
+  sendCode,
+  verifyCode,
+  getQr,
+} = require("../controllers/phoneVerificationController");
 
+// Enviar código de verificación
+router.post("/send-code", sendCode);
 
-// Ruta para enviar el código de verificación al teléfono
-router.post('/send-verification-code', sendVerificationCode);
+// Verificar código recibido
+router.post("/verify-code", verifyCode);
 
-// Ruta para verificar el código ingresado por el usuario
-router.post('/verify-code', verifyCode);
+// Obtener QR para vincular WhatsApp
+router.get("/generate-qr", getQr);
 
-// Ruta para generar el QR
-router.get('/generate-qr', async (req, res) => {
-    try {
-      const qrUrl = await generateWhatsAppQRCode();  // Llamamos a la función para generar el QR
-      res.status(200).json({ success: true, qrUrl });
-    } catch (error) {
-      res.status(500).json({ success: false, message: "Error al generar el QR" });
-    }
-  });
-
-  
 module.exports = router;
