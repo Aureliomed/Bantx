@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import axios from "axios";
 import "../styles/globals.css";
-import "../styles/user-profile.css";
+import "../styles/user-dashboard.css";
 import { Pencil, Key, UserCheck, Lock } from "lucide-react";
 import { toast } from "react-toastify";
 
