@@ -41,14 +41,23 @@ const {
   // Generar QR para vincular el bot de WhatsApp
   const getQr = async (req, res) => {
     try {
-      const qrUrl = await generateWhatsAppQRCode();
-      return res.status(200).json({ success: true, qrUrl });
+      const result = await generateWhatsAppQRCode();
+  
+      if (!result || !result.qrUrl) {
+        return res.status(500).json({ success: false, message: "No se pudo generar el QR." });
+      }
+  
+      return res.status(200).json({
+        success: true,
+        qrUrl: result.qrUrl,
+        connected: result.connected || false,
+      });
     } catch (error) {
       console.error("❌ Error al generar QR:", error);
       return res.status(500).json({ success: false, message: "No se pudo generar el QR." });
     }
   };
-  
+    
   module.exports = {
     sendCode,
     verifyCode,
