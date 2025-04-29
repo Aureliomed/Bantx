@@ -7,7 +7,6 @@ import axios from "axios";
 import "../styles/globals.css";
 import "../styles/user-dashboard.css";
 
-// 🧩 Íconos actualizados
 import {
   Clock,
   Mail,
@@ -16,6 +15,7 @@ import {
   Settings,
   QrCode,
   ArrowLeft,
+  RefreshCcw,
 } from "lucide-react";
 
 const AdminDashboard = () => {
@@ -23,6 +23,32 @@ const AdminDashboard = () => {
   const { socket } = useSocket();
   const navigate = useNavigate();
   const [qrUrl, setQrUrl] = useState("");
+  const [waConnected, setWaConnected] = useState(false);
+  const [loadingQR, setLoadingQR] = useState(true);
+
+  const checkConnectionStatus = async () => {
+    try {
+      const res = await axios.get("/api/verify-phone/status");
+      setWaConnected(res.data.connected);
+    } catch (err) {
+      console.error("❌ Error al verificar estado de WhatsApp:", err);
+    }
+  };
+
+  const getQrCode = async () => {
+    setLoadingQR(true);
+    try {
+      const res = await axios.get("/api/verify-phone/generate-qr");
+      if (res.data.success) {
+        setQrUrl(res.data.qrUrl);
+        setWaConnected(false);
+      }
+    } catch (err) {
+      console.error("❌ Error al obtener QR:", err);
+    } finally {
+      setLoadingQR(false);
+    }
+  };
 
   useEffect(() => {
     if (loading) return;
@@ -39,18 +65,9 @@ const AdminDashboard = () => {
       return () => socket.off("server-status", handleStatus);
     }
 
-    const getQrCode = async () => {
-      try {
-        const response = await axios.get("/api/verify-phone/generate-qr");
-        if (response.data.success) {
-          setQrUrl(response.data.qrUrl);
-        }
-      } catch (error) {
-        console.error("Error al obtener QR:", error);
-      }
-    };
-
-    getQrCode();
+    checkConnectionStatus().then((connected) => {
+      if (!connected) getQrCode();
+    });
   }, [user, loading, socket, navigate]);
 
   return (
@@ -69,22 +86,42 @@ const AdminDashboard = () => {
             </div>
           </div>
 
-          {/* QR para WhatsApp */}
+          {/* QR WhatsApp */}
           <div className="user-card">
             <div className="wallet-summary">
               <p className="wallet-label">WhatsApp Bot</p>
-              <h2 className="wallet-amount">Escanea para vincular tu número</h2>
-            </div>
-            <div className="wallet-actions">
-              {qrUrl ? (
-                <img src={qrUrl} alt="QR de WhatsApp" className="qr-image" style={{ maxWidth: "250px" }} />
+              {waConnected ? (
+                <h2 className="wallet-amount" style={{ color: "green" }}>
+                  ✅ Conexión establecida
+                </h2>
               ) : (
-                <p style={{ color: "#888" }}>Generando código QR...</p>
+                <>
+                  <h2 className="wallet-amount">Escanea para vincular tu número</h2>
+                  {loadingQR ? (
+                    <p style={{ color: "#888" }}>⏳ Generando código QR...</p>
+                  ) : qrUrl ? (
+                    <img
+                      src={qrUrl}
+                      alt="QR de WhatsApp"
+                      className="qr-image"
+                      style={{ maxWidth: "250px", marginTop: "8px" }}
+                    />
+                  ) : (
+                    <p style={{ color: "red" }}>❌ Error al generar QR.</p>
+                  )}
+                  <button
+                    className="button"
+                    onClick={getQrCode}
+                    style={{ marginTop: "10px" }}
+                  >
+                    <RefreshCcw size={16} /> Regenerar QR
+                  </button>
+                </>
               )}
             </div>
           </div>
 
-          {/* Sección navegación */}
+          {/* Panel navegación */}
           <div className="user-card">
             <div className="wallet-summary">
               <p className="wallet-label">Panel de administración</p>

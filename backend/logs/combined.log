@@ -4,3 +4,16 @@
 [2025-04-29T17:09:50.821Z] INFO: 🚀 Servidor corriendo en http://localhost:5000
 [2025-04-29T17:09:50.836Z] INFO: ✅ Conectado a MongoDB correctamente.
 [2025-04-29T17:09:50.855Z] INFO: 📊 Usuarios registrados: 0
+[2025-04-29T17:15:34.036Z] WARN: ❌ Ruta no encontrada: /api/auth/login
+[2025-04-29T17:22:08.278Z] INFO: 🚀 Servidor corriendo en http://localhost:5000
+[2025-04-29T17:22:08.356Z] INFO: ✅ Conectado a MongoDB correctamente.
+[2025-04-29T17:22:08.426Z] INFO: 📊 Usuarios registrados: 2
+[2025-04-29T17:27:27.216Z] INFO: 🚀 Servidor corriendo en http://localhost:5000
+[2025-04-29T17:27:27.330Z] INFO: ✅ Conectado a MongoDB correctamente.
+[2025-04-29T17:27:27.350Z] INFO: 📊 Usuarios registrados: 2
+[2025-04-29T17:28:57.454Z] INFO: 🚀 Servidor corriendo en http://localhost:5000
+[2025-04-29T17:28:57.702Z] INFO: ✅ Conectado a MongoDB correctamente.
+[2025-04-29T17:28:57.731Z] INFO: 📊 Usuarios registrados: 2
+[2025-04-29T17:30:28.408Z] INFO: 🚀 Servidor corriendo en http://localhost:5000
+[2025-04-29T17:30:28.520Z] INFO: ✅ Conectado a MongoDB correctamente.
+[2025-04-29T17:30:28.652Z] INFO: 📊 Usuarios registrados: 2
