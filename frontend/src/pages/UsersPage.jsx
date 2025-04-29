@@ -14,8 +14,10 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import TopBarAdmin from "../components/TopBarAdmin";
 import "../styles/globals.css";
+import "../styles/user-dashboard.css";
 
-// 🧩 Modal para crear administrador
+import { UserPlus, ShieldCheck, Edit, Trash2, ArrowLeft } from "lucide-react";
+
 const CreateAdminModal = ({ onClose, onSuccess }) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -26,7 +28,7 @@ const CreateAdminModal = ({ onClose, onSuccess }) => {
     e.preventDefault();
     try {
       await axios.post(
-        `${import.meta.env.VITE_API_URL}/api/auth/create-admin`,  // Usamos VITE_API_URL
+        `${import.meta.env.VITE_API_URL}/api/auth/create-admin`,
         { email, password, secretKey },
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -37,7 +39,7 @@ const CreateAdminModal = ({ onClose, onSuccess }) => {
       toast.error("❌ Error al crear administrador");
     }
   };
-  
+
   return (
     <div className="modal">
       <div className="box">
@@ -84,7 +86,6 @@ const UsersPage = () => {
       const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/users`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-    
       dispatch(setUsers(res.data));
     } catch (error) {
       dispatch(setError("❌ Error al cargar usuarios"));
@@ -105,11 +106,10 @@ const UsersPage = () => {
   const handleUpdate = async (user) => {
     try {
       const res = await axios.put(
-        `${import.meta.env.VITE_API_URL}/api/users/profile`,  // Usamos VITE_API_URL
+        `${import.meta.env.VITE_API_URL}/api/users/profile`,
         { email: user.email, role: editRole, status: editStatus },
         { headers: { Authorization: `Bearer ${token}` } }
       );
-    
       dispatch(updateUser(res.data.user));
       socket?.emit("userUpdated", res.data.user);
       toast.success("✅ Usuario actualizado");
@@ -124,7 +124,6 @@ const UsersPage = () => {
       await axios.delete(`${import.meta.env.VITE_API_URL}/api/users/${userId}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-    
       dispatch(removeUser(userId));
       socket?.emit("userRemoved", userId);
       toast.success("🗑️ Usuario eliminado!");
@@ -140,21 +139,33 @@ const UsersPage = () => {
   return (
     <>
       <TopBarAdmin />
-      <div className="layout-page">
+      <div className="layout-page fade-in">
         <div className="content-box">
-          <h1 className="title">👥 Gestión de Usuarios</h1>
+          <div className="user-header">
+            <div className="user-header-left">
+              <div className="user-avatar">👥</div>
+              <div className="user-info">
+                <div className="username">Usuarios del sistema</div>
+                <div className="status">Administrador</div>
+              </div>
+            </div>
+          </div>
+
           <input
             type="text"
             className="input"
             placeholder="Buscar por correo..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
+            style={{ margin: "16px 0" }}
           />
-          <button className="button" onClick={() => setShowAdminModal(true)}>➕ Crear Administrador</button>
 
-          {/* ADMINISTRADORES */}
+          <button className="button" onClick={() => setShowAdminModal(true)}>
+            <UserPlus size={16} /> Crear Administrador
+          </button>
+
           <button className="button" onClick={() => setExpandedAdmins(!expandedAdmins)}>
-            👑 Administradores ({admins.length}) {expandedAdmins ? "▲" : "▼"}
+            <ShieldCheck size={16} /> Administradores ({admins.length}) {expandedAdmins ? "▲" : "▼"}
           </button>
           {expandedAdmins && admins.map((u) => (
             <div key={u._id} className="user-card">
@@ -172,16 +183,15 @@ const UsersPage = () => {
                     setEditUserId(u._id);
                     setEditRole(u.role);
                     setEditStatus(u.status);
-                  }}>✏️</button>
-                  <button className="delete-btn" onClick={() => handleDelete(u._id)}>🗑️</button>
+                  }}><Edit size={16} /></button>
+                  <button className="delete-btn" onClick={() => handleDelete(u._id)}><Trash2 size={16} /></button>
                 </>
               )}
             </div>
           ))}
 
-          {/* USUARIOS */}
           <button className="button" onClick={() => setExpandedUsers(!expandedUsers)}>
-            🧑 Usuarios ({regularUsers.length}) {expandedUsers ? "▲" : "▼"}
+            <UserPlus size={16} /> Usuarios ({regularUsers.length}) {expandedUsers ? "▲" : "▼"}
           </button>
           {expandedUsers && regularUsers.map((u) => (
             <div key={u._id} className="user-card">
@@ -199,8 +209,8 @@ const UsersPage = () => {
                     setEditUserId(u._id);
                     setEditRole(u.role);
                     setEditStatus(u.status);
-                  }}>✏️</button>
-                  <button className="delete-btn" onClick={() => handleDelete(u._id)}>🗑️</button>
+                  }}><Edit size={16} /></button>
+                  <button className="delete-btn" onClick={() => handleDelete(u._id)}><Trash2 size={16} /></button>
                 </>
               )}
             </div>
@@ -212,7 +222,7 @@ const UsersPage = () => {
 
           <div className="extra-options" style={{ marginTop: "24px" }}>
             <button onClick={() => navigate("/admin")} className="link">
-              ⬅ Volver al panel de administración
+              <ArrowLeft size={14} style={{ marginRight: "4px" }} /> Volver al panel de administración
             </button>
           </div>
         </div>

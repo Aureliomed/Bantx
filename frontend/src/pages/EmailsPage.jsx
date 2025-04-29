@@ -6,15 +6,19 @@ import {
   setEmails,
   incrementUnread,
   resetUnread,
-  setFilter
+  setFilter,
 } from "../store/store";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import TopBarAdmin from "../components/TopBarAdmin";
 import "../styles/globals.css";
+import "../styles/user-dashboard.css";
 import { useNavigate } from "react-router-dom";
 
-// 📡 Conexión WebSocket única
+// 🧩 Íconos Lucide actualizados
+import { Mail, RefreshCcw, Search, ArrowUp, ArrowDown, ArrowLeft } from "lucide-react";
+
+// 📡 WebSocket
 const socket = io(import.meta.env.VITE_API_URL, { autoConnect: false });
 
 const EmailsPage = () => {
@@ -42,7 +46,6 @@ const EmailsPage = () => {
       const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/emails?page=${page}&limit=5`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-    
 
       dispatch(setEmails(res.data.emails));
       setTotalPages(res.data.totalPages);
@@ -93,22 +96,29 @@ const EmailsPage = () => {
   return (
     <>
       <TopBarAdmin />
-      <div className="layout-page">
+      <div className="layout-page fade-in">
         <div className="content-box">
-          <h1 className="title">
-            📧 Gestión de Correos {unreadCount > 0 && `(${unreadCount} nuevos)`}
-          </h1>
+          <div className="user-header">
+            <div className="user-header-left">
+              <div className="user-avatar">📧</div>
+              <div className="user-info">
+                <div className="username">Gestión de Correos</div>
+                <div className="status">Administrador</div>
+              </div>
+            </div>
+          </div>
 
           {unreadCount > 0 && (
             <button className="button" onClick={() => dispatch(resetUnread())}>
-              🔄 Resetear contador
+              <RefreshCcw size={16} /> Resetear contador ({unreadCount})
             </button>
           )}
 
-          {/* 🔽 Filtros */}
-          <div className="filters" style={{ marginTop: "20px" }}>
+          {/* Filtros */}
+          <div className="filters row" style={{ marginTop: "20px", gap: "10px" }}>
             <label>Ordenar por:</label>
             <select
+              className="input"
               value={filter.orderBy}
               onChange={(e) =>
                 dispatch(setFilter({ ...filter, orderBy: e.target.value }))
@@ -118,6 +128,7 @@ const EmailsPage = () => {
               <option value="to">Destinatario</option>
             </select>
             <button
+              className="button outline"
               onClick={() =>
                 dispatch(
                   setFilter({
@@ -127,23 +138,32 @@ const EmailsPage = () => {
                 )
               }
             >
-              {filter.orderDirection === "asc" ? "⬆️ Ascendente" : "⬇️ Descendente"}
+              {filter.orderDirection === "asc" ? (
+                <>
+                  <ArrowUp size={14} style={{ marginRight: "4px" }} /> Ascendente
+                </>
+              ) : (
+                <>
+                  <ArrowDown size={14} style={{ marginRight: "4px" }} /> Descendente
+                </>
+              )}
             </button>
           </div>
 
-          {/* ❌ Error */}
+          {/* Buscador */}
+          <div style={{ margin: "20px 0" }}>
+            <input
+              type="text"
+              className="input"
+              placeholder="Buscar por asunto..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
+          </div>
+
+          {/* Tabla */}
           {errorMessage && <p className="error-message">{errorMessage}</p>}
 
-          {/* 🔍 Buscar */}
-          <input
-            type="text"
-            className="search-input"
-            placeholder="🔍 Buscar por asunto..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-          />
-
-          {/* 📨 Tabla */}
           {loading ? (
             <p className="loading">⏳ Cargando correos...</p>
           ) : (
@@ -175,8 +195,8 @@ const EmailsPage = () => {
             </div>
           )}
 
- {/* 🔁 Paginación */}
- <div className="pagination" style={{ marginTop: "20px" }}>
+          {/* Paginación */}
+          <div className="pagination" style={{ marginTop: "20px" }}>
             <button
               className="button"
               onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
@@ -196,10 +216,11 @@ const EmailsPage = () => {
             </button>
           </div>
 
-          {/* 🔙 Volver al panel */}
+          {/* Volver */}
           <div className="extra-options" style={{ marginTop: "24px" }}>
             <button onClick={() => navigate("/admin")} className="link">
-              ⬅ Volver al panel de administración
+              <ArrowLeft size={14} style={{ marginRight: "4px" }} />
+              Volver al panel de administración
             </button>
           </div>
         </div>
