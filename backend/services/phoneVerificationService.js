@@ -1,74 +1,75 @@
 // backend/services/phoneVerificationService.js
 
-const { makeWASocket, useSingleFileAuthState } = require('@adiwajshing/baileys');
+const { default: makeWASocket, useMultiFileAuthState } = require('@whiskeysockets/baileys');
 const QRCode = require('qrcode');
+const path = require('path');
 const User = require("../models/User");
 
-// Enviar código de verificación por WhatsApp
-const sendVerificationCodeToPhone = async (phoneNumber) => {
-  const { state, saveState } = useSingleFileAuthState('auth_info.json');
-  const sock = makeWASocket({ auth: state });
+let sock = null; // Socket persistente
 
-  await sock.connect();
+const initWhatsAppSocket = async () => {
+  const authPath = path.resolve('./auth_info'); // Carpeta para guardar sesión
+  const { state, saveCreds } = await useMultiFileAuthState(authPath);
+
+  sock = makeWASocket({
+    auth: state,
+    printQRInTerminal: false,
+    markOnlineOnConnect: false,
+  });
+
+  sock.ev.on("creds.update", saveCreds);
+
+  return sock;
+};
+
+const generateWhatsAppQRCode = async () => {
+  return new Promise(async (resolve, reject) => {
+    const sock = await initWhatsAppSocket();
+
+    sock.ev.on("connection.update", async ({ qr, connection }) => {
+      if (qr) {
+        try {
+          const qrUrl = await QRCode.toDataURL(qr);
+          return resolve(qrUrl);
+        } catch (err) {
+          return reject("Error generando el QR: " + err.message);
+        }
+      }
+
+      if (connection === "open") {
+        console.log("✅ WhatsApp conectado");
+      }
+
+      if (connection === "close") {
+        console.log("🔴 WhatsApp desconectado");
+      }
+    });
+  });
+};
+
+const sendVerificationCodeToPhone = async (phoneNumber) => {
+  if (!sock) sock = await initWhatsAppSocket();
 
   const code = Math.floor(100000 + Math.random() * 900000);
   const message = `Tu código de verificación es: ${code}`;
 
   try {
     await sock.sendMessage(`${phoneNumber}@s.whatsapp.net`, { text: message });
-    saveState();
 
     const user = await User.findOne({ "profileData.phone": phoneNumber });
-    if (!user) return { success: false, message: "Usuario no encontrado con ese teléfono." };
+    if (!user) return { success: false, message: "Usuario no encontrado" };
 
     user.verification.code = code.toString();
-    user.verification.expires = new Date(Date.now() + 10 * 60 * 1000); // 10 minutos
+    user.verification.expires = new Date(Date.now() + 10 * 60 * 1000);
     await user.save();
 
     return { success: true };
-  } catch (error) {
-    console.error("❌ Error al enviar el código:", error);
+  } catch (err) {
+    console.error("❌ Error al enviar código:", err);
     return { success: false, message: "No se pudo enviar el mensaje" };
   }
 };
 
-// Generar código QR para conectar WhatsApp Web
-const generateWhatsAppQRCode = async () => {
-  return new Promise(async (resolve, reject) => {
-    const { state, saveState } = useSingleFileAuthState('auth_info.json');
-    const sock = makeWASocket({ auth: state, printQRInTerminal: false });
-
-    sock.ev.on('connection.update', async (update) => {
-      const { qr, connection } = update;
-
-      if (qr) {
-        try {
-          const qrUrl = await QRCode.toDataURL(qr);
-          resolve(qrUrl);
-        } catch (err) {
-          reject("❌ Error generando el QR: " + err.message);
-        }
-      }
-
-      if (connection === 'open') {
-        console.log("✅ Conectado a WhatsApp");
-        saveState();
-      }
-
-      if (connection === 'close') {
-        console.log("🔴 Desconectado de WhatsApp");
-      }
-    });
-
-    try {
-      await sock.connect();
-    } catch (err) {
-      reject("❌ Error conectando con WhatsApp: " + err.message);
-    }
-  });
-};
-
-// Validar código ingresado por el usuario
 const validateVerificationCode = async (phoneNumber, code) => {
   try {
     const user = await User.findOne({ "profileData.phone": phoneNumber }).select("+verification.code +verification.expires");
@@ -96,7 +97,7 @@ const validateVerificationCode = async (phoneNumber, code) => {
 };
 
 module.exports = {
-  sendVerificationCodeToPhone,
   generateWhatsAppQRCode,
+  sendVerificationCodeToPhone,
   validateVerificationCode,
 };
