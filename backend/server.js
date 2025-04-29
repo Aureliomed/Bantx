@@ -14,10 +14,7 @@ if (process.env.NODE_ENV === "production") {
   app.set("trust proxy", true);
 }
 
-const PORT = process.env.PORT || 8080;
-app.listen(PORT, () => {
-  console.log(`Servidor escuchando en puerto ${PORT}`);
-});
+const PORT = process.env.PORT || 5000;
 
 // 🔐 Seguridad
 app.use(helmet());
