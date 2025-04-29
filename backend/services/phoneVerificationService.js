@@ -34,40 +34,45 @@ const initWhatsAppSocket = async () => {
 };
 
 const generateWhatsAppQRCode = async () => {
-  const { state, saveCreds } = await useMultiFileAuthState(authPath);
-
   return new Promise(async (resolve, reject) => {
-    const tempSock = makeWASocket({
-      auth: state,
-      printQRInTerminal: false,
-      markOnlineOnConnect: false,
-    });
-
-    tempSock.ev.on("creds.update", saveCreds);
-
-    tempSock.ev.on("connection.update", async (update) => {
-      const { qr, connection } = update;
-
-      if (qr) {
-        const qrUrl = await QRCode.toDataURL(qr);
-        isConnectedToWhatsApp = false;
-        resolve({ qrUrl, success: true, connected: false });
-      }
-
-      if (connection === "open") {
-        isConnectedToWhatsApp = true;
-        await tempSock.logout(); // cerramos después de conectar para evitar conflicto
-      }
-
-      if (connection === "close") {
-        isConnectedToWhatsApp = false;
-      }
-    });
-
     try {
-      await tempSock.connect();
+      const authPath = path.resolve('./auth_info'); // Asegúrate que sea consistente
+      const { state, saveCreds } = await useMultiFileAuthState(authPath);
+
+      const sock = makeWASocket({
+        auth: state,
+        printQRInTerminal: false,
+        markOnlineOnConnect: false,
+      });
+
+      sock.ev.on("creds.update", saveCreds);
+
+      sock.ev.on("connection.update", async (update) => {
+        const { qr, connection } = update;
+
+        if (qr) {
+          try {
+            const qrUrl = await QRCode.toDataURL(qr);
+            isConnectedToWhatsApp = false;
+            return resolve({ qrUrl, success: true, connected: false });
+          } catch (err) {
+            return reject({ success: false, message: "Error generando QR", error: err.message });
+          }
+        }
+
+        if (connection === "open") {
+          isConnectedToWhatsApp = true;
+          return resolve({ success: true, qrUrl: null, connected: true });
+        }
+
+        if (connection === "close") {
+          isConnectedToWhatsApp = false;
+        }
+      });
+
+      // 🚫 Ya no llames `sock.connect()` porque `makeWASocket()` ya lo hace por ti
     } catch (err) {
-      reject({ success: false, message: "❌ Error conectando con WhatsApp", error: err.message });
+      return reject({ success: false, message: "❌ Error conectando con WhatsApp", error: err.message });
     }
   });
 };
