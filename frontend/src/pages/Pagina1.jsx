@@ -112,9 +112,10 @@ useEffect(() => {
       </div>
 
       {/* Botón Editar con solo ícono flotante */}
-      <button className="edit-button" onClick={() => navigate("/settings")}>
-        <Pencil size={16} />
-      </button>
+      <button className="edit-button" onClick={() => navigate("/user-profile")}>
+  <Pencil size={16} />
+</button>
+
     </div>
   
 

@@ -1,4 +1,3 @@
-// src/routes/AppRoutes.jsx
 import { Routes, Route } from "react-router-dom";
 import HomePage from "../pages/HomePage";
 import LoginPage from "../pages/LoginPage";
@@ -23,6 +22,8 @@ import OnboardingPage from "../pages/OnboardingPage"; // 👈 NUEVO
 import ProtectedRoute from "./ProtectedRoute";
 import ResetPassword from "../pages/ResetPassword"; // ✅ Ajusta la ruta según tu estructura
 
+import UserProfilePage from "../pages/UserProfilePage"; // Importa la página de perfil de usuario
+
 const AppRoutes = () => {
   return (
     <Routes>
@@ -46,6 +47,14 @@ const AppRoutes = () => {
         element={
           <ProtectedRoute requiredRoles={["user"]}>
             <Pagina1 />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/user-profile" // Ruta de la página de perfil de usuario
+        element={
+          <ProtectedRoute requiredRoles={["user"]}>
+            <UserProfilePage />
           </ProtectedRoute>
         }
       />

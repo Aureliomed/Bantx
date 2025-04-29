@@ -50,9 +50,10 @@ const TopBarUser = () => {
       <MenuItem onClick={() => { handleMenuClose(); navigate("/transactions"); }}>
         <CreditCard size={18} style={{ marginRight: "8px" }} /> Transacciones
       </MenuItem>
-      <MenuItem onClick={() => { handleMenuClose(); navigate("/settings"); }}>
-        <Settings size={18} style={{ marginRight: "8px" }} /> Configuración
-      </MenuItem>
+      <MenuItem onClick={() => { handleMenuClose(); navigate("/user-profile"); }}>
+  <Settings size={18} style={{ marginRight: "8px" }} /> Configuración
+</MenuItem>
+
     </Menu>
 
         {/* Logo BANTX centrado */}
